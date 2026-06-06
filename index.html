@@ -1,0 +1,4590 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Project Builder AI - Công cụ AI hỗ trợ tạo và quản lý dự án code tự động trên CodeSandbox"
+    />
+    <title>Project Builder AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
+        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        min-height: 100vh;
+        color: #e2e8f0;
+        overflow: hidden;
+      }
+
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #34d399;
+        border-radius: 3px;
+      }
+
+      .app {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 20px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        flex-shrink: 0;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .logo {
+        font-size: 22px;
+        font-weight: 700;
+        background: linear-gradient(90deg, #34d399, #60a5fa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .model-select {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #e2e8f0;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+
+      .model-select option {
+        background: #302b63;
+      }
+
+      .mode-tabs {
+        display: flex;
+        gap: 6px;
+      }
+
+      .mode-btn {
+        padding: 7px 14px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.05);
+        color: #94a3b8;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.2s;
+      }
+
+      .mode-btn.active {
+        background: rgba(52, 211, 153, 0.2);
+        border-color: #34d399;
+        color: #34d399;
+      }
+
+      .main {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      .sidebar {
+        width: 300px;
+        min-width: 300px;
+        background: rgba(255, 255, 255, 0.03);
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .sidebar-header {
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+      }
+
+      .sidebar-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .sidebar-actions {
+        display: flex;
+        gap: 6px;
+      }
+
+      .icon-btn {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #94a3b8;
+        padding: 5px 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s;
+      }
+
+      .icon-btn:hover {
+        background: rgba(52, 211, 153, 0.15);
+        border-color: #34d399;
+        color: #34d399;
+      }
+
+      .file-tree {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px;
+      }
+
+      .tree-empty {
+        padding: 20px;
+        text-align: center;
+        color: #475569;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .tree-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.15s;
+        user-select: none;
+      }
+
+      .tree-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .tree-item.active {
+        background: rgba(52, 211, 153, 0.15);
+        color: #34d399;
+      }
+
+      .tree-item.folder {
+        color: #60a5fa;
+        cursor: default;
+      }
+
+      .tree-item .item-icon {
+        font-size: 14px;
+        flex-shrink: 0;
+      }
+
+      .tree-item .item-name {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .tree-item .item-status {
+        font-size: 12px;
+        flex-shrink: 0;
+      }
+
+      .tree-folder-children {
+        padding-left: 16px;
+      }
+
+      .right-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .code-viewer {
+        flex: 0 0 45%;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .code-header {
+        padding: 10px 16px;
+        background: rgba(255, 255, 255, 0.04);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+      }
+
+      .code-filename {
+        font-size: 13px;
+        font-weight: 600;
+        color: #34d399;
+      }
+
+      .code-actions {
+        display: flex;
+        gap: 6px;
+      }
+
+      .code-body {
+        flex: 1;
+        overflow: auto;
+        padding: 16px;
+        font-family: "JetBrains Mono", "Courier New", monospace;
+        font-size: 13px;
+        line-height: 1.6;
+        white-space: pre;
+        tab-size: 2;
+      }
+
+      .code-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #475569;
+        font-size: 14px;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .chat-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        min-height: 0;
+      }
+
+      .chat-header {
+        padding: 10px 16px;
+        background: rgba(255, 255, 255, 0.04);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+      }
+
+      .chat-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #94a3b8;
+      }
+
+      .chat-header-actions {
+        display: flex;
+        gap: 6px;
+      }
+
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .msg {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+      }
+
+      .msg.user {
+        flex-direction: row-reverse;
+      }
+
+      .msg-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+      }
+
+      .msg.user .msg-avatar {
+        background: linear-gradient(135deg, #34d399, #059669);
+      }
+
+      .msg.bot .msg-avatar {
+        background: linear-gradient(135deg, #60a5fa, #3b82f6);
+      }
+
+      .msg-bubble {
+        max-width: 75%;
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 14px;
+        line-height: 1.6;
+        word-break: break-word;
+      }
+
+      .msg.user .msg-bubble {
+        background: rgba(52, 211, 153, 0.15);
+        border: 1px solid rgba(52, 211, 153, 0.25);
+        border-radius: 12px 2px 12px 12px;
+      }
+
+      .msg.bot .msg-bubble {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 2px 12px 12px 12px;
+      }
+
+      .msg-bubble pre {
+        background: rgba(0, 0, 0, 0.4);
+        border-radius: 6px;
+        padding: 10px;
+        overflow-x: auto;
+        margin: 8px 0;
+        font-size: 12px;
+        white-space: pre;
+      }
+
+      .msg-bubble code {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 2px 5px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-family: "JetBrains Mono", "Courier New", monospace;
+      }
+
+      .msg-bubble strong {
+        color: #34d399;
+      }
+
+      .msg-bubble ul,
+      .msg-bubble ol {
+        padding-left: 18px;
+        margin: 6px 0;
+      }
+
+      .msg-bubble li {
+        margin-bottom: 3px;
+      }
+
+      .typing-indicator {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        padding: 10px 14px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 2px 12px 12px 12px;
+        width: fit-content;
+      }
+
+      .typing-dot {
+        width: 7px;
+        height: 7px;
+        background: #60a5fa;
+        border-radius: 50%;
+        animation: bounce 0.8s infinite;
+      }
+
+      .typing-dot:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+
+      .typing-dot:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+
+      @keyframes bounce {
+        0%,
+        80%,
+        100% {
+          transform: translateY(0);
+        }
+
+        40% {
+          transform: translateY(-6px);
+        }
+      }
+
+      .quick-actions {
+        padding: 10px 16px;
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        flex-shrink: 0;
+      }
+
+      .quick-btn {
+        padding: 6px 12px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #94a3b8;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+
+      .quick-btn:hover {
+        background: rgba(52, 211, 153, 0.15);
+        border-color: #34d399;
+        color: #34d399;
+      }
+
+      .chat-input-area {
+        padding: 12px 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+        flex-shrink: 0;
+      }
+
+      .chat-textarea {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #e2e8f0;
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-family: "Inter", system-ui, sans-serif;
+        resize: none;
+        min-height: 42px;
+        max-height: 120px;
+        outline: none;
+        transition: border-color 0.2s;
+        line-height: 1.5;
+      }
+
+      .chat-textarea:focus {
+        border-color: #34d399;
+      }
+
+      .chat-textarea::placeholder {
+        color: #475569;
+      }
+
+      .send-btn {
+        background: linear-gradient(135deg, #34d399, #059669);
+        border: none;
+        color: #fff;
+        padding: 10px 16px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s;
+        flex-shrink: 0;
+        height: 42px;
+      }
+
+      .send-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(52, 211, 153, 0.3);
+      }
+
+      .send-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .project-info {
+        padding: 10px 16px;
+        background: rgba(52, 211, 153, 0.08);
+        border-bottom: 1px solid rgba(52, 211, 153, 0.15);
+        font-size: 12px;
+        color: #34d399;
+        display: none;
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(52, 211, 153, 0.95);
+        color: #0f0c29;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        z-index: 1000;
+        transform: translateY(60px);
+        transition: transform 0.3s;
+        pointer-events: none;
+      }
+
+      .toast.show {
+        transform: translateY(0);
+      }
+
+      /* API Key Modal */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal-overlay.hidden {
+        display: none;
+      }
+
+      .modal-box {
+        background: linear-gradient(135deg, #1e1b4b, #1e293b);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 16px;
+        padding: 28px 32px;
+        width: 420px;
+        max-width: 90vw;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      }
+
+      .modal-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #e2e8f0;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .modal-desc {
+        font-size: 13px;
+        color: #94a3b8;
+        margin-bottom: 20px;
+        line-height: 1.6;
+      }
+
+      .modal-desc a {
+        color: #60a5fa;
+        text-decoration: none;
+      }
+
+      .modal-desc a:hover {
+        text-decoration: underline;
+      }
+
+      .modal-input {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #e2e8f0;
+        padding: 10px 14px;
+        border-radius: 9px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s;
+        box-sizing: border-box;
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      .modal-input:focus {
+        border-color: #34d399;
+      }
+
+      .modal-input::placeholder {
+        color: #475569;
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .modal-save-btn {
+        flex: 1;
+        background: linear-gradient(135deg, #34d399, #059669);
+        border: none;
+        color: #fff;
+        padding: 10px;
+        border-radius: 9px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        transition: opacity 0.2s;
+      }
+
+      .modal-save-btn:hover {
+        opacity: 0.9;
+      }
+
+      .modal-skip-btn {
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #94a3b8;
+        padding: 10px 16px;
+        border-radius: 9px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s;
+      }
+
+      .modal-skip-btn:hover {
+        border-color: #94a3b8;
+        color: #e2e8f0;
+      }
+
+      /* API key badge */
+      .api-key-badge {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        padding: 5px 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 12px;
+        color: #94a3b8;
+        transition: all 0.2s;
+      }
+
+      .api-key-badge:hover {
+        border-color: #34d399;
+        color: #34d399;
+      }
+
+      .api-key-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #f87171;
+        flex-shrink: 0;
+      }
+
+      .api-key-dot.ok {
+        background: #34d399;
+      }
+
+      /* GitHub Panel */
+      .github-panel {
+        padding: 10px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.02);
+        flex-shrink: 0;
+      }
+
+      .github-panel-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+      }
+
+      .github-input-row {
+        display: flex;
+        gap: 6px;
+      }
+
+      .github-input {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #e2e8f0;
+        padding: 6px 10px;
+        border-radius: 7px;
+        font-size: 12px;
+        outline: none;
+        transition: border-color 0.2s;
+        min-width: 0;
+      }
+
+      .github-input:focus {
+        border-color: #f97316;
+      }
+
+      .github-input::placeholder {
+        color: #475569;
+      }
+
+      .github-connect-btn {
+        background: rgba(249, 115, 22, 0.2);
+        border: 1px solid rgba(249, 115, 22, 0.4);
+        color: #f97316;
+        padding: 6px 10px;
+        border-radius: 7px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+        transition: all 0.2s;
+        flex-shrink: 0;
+      }
+
+      .github-connect-btn:hover {
+        background: rgba(249, 115, 22, 0.35);
+      }
+
+      .github-connect-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .github-status {
+        margin-top: 8px;
+        font-size: 12px;
+        display: none;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .github-status.connected {
+        color: #34d399;
+      }
+
+      .github-status.loading {
+        color: #60a5fa;
+      }
+
+      .github-status.error {
+        color: #f87171;
+      }
+
+      .github-ctx-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(249, 115, 22, 0.15);
+        border: 1px solid rgba(249, 115, 22, 0.3);
+        color: #f97316;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .github-clear-btn {
+        background: none;
+        border: none;
+        color: #64748b;
+        cursor: pointer;
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+
+      .github-clear-btn:hover {
+        color: #f87171;
+      }
+
+      .github-files-count {
+        font-size: 11px;
+        color: #64748b;
+      }
+
+      @media (max-width: 768px) {
+        .main {
+          flex-direction: column;
+        }
+
+        .sidebar {
+          width: 100%;
+          min-width: unset;
+          height: 200px;
+          border-right: none;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .code-viewer {
+          flex: 0 0 200px;
+        }
+      }
+
+      .hl-keyword {
+        color: #c084fc;
+      }
+
+      .hl-string {
+        color: #86efac;
+      }
+
+      .hl-comment {
+        color: #64748b;
+        font-style: italic;
+      }
+
+      .hl-number {
+        color: #fb923c;
+      }
+
+      .hl-tag {
+        color: #60a5fa;
+      }
+
+      .hl-attr {
+        color: #fbbf24;
+      }
+
+      .hl-function {
+        color: #34d399;
+      }
+
+      /* Streaming cursor blink */
+      #streamBubble::after {
+        content: "▋";
+        color: #34d399;
+        animation: blink 0.7s step-end infinite;
+        font-size: 13px;
+      }
+
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+      }
+
+      /* Code body line wrap toggle */
+      .code-body.wrap {
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
+      /* Toast variants */
+      .toast.error {
+        background: rgba(248, 113, 113, 0.95);
+        color: #fff;
+      }
+
+      /* File count badge */
+      .file-count-badge {
+        display: inline-block;
+        background: rgba(52, 211, 153, 0.2);
+        border: 1px solid rgba(52, 211, 153, 0.3);
+        color: #34d399;
+        padding: 2px 7px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-left: 6px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <div class="header">
+        <div class="header-left">
+          <div class="logo">&#9889; Project Builder AI</div>
+        </div>
+        <div class="header-right">
+          <div class="mode-tabs">
+            <button
+              class="mode-btn active"
+              id="btnProjectMode"
+              onclick="setMode('project')"
+            >
+              &#127959; Project Mode
+            </button>
+            <button class="mode-btn" id="btnChatMode" onclick="setMode('chat')">
+              &#128172; Chat Mode
+            </button>
+          </div>
+          <select class="model-select" id="modelSelect">
+            <option value="mimo-v2.5-pro">&#11088; mimo-v2.5-pro</option>
+            <option value="mimo-v2.5">&#129504; mimo-v2.5</option>
+            <option value="mimo-v2-flash">&#9889; mimo-v2-flash</option>
+            <option value="gpt-4o">&#129302; gpt-4o</option>
+            <option value="gpt-4o-mini">&#9889; gpt-4o-mini</option>
+            <option value="claude-sonnet-4-5">&#129668; claude-sonnet</option>
+            <option value="deepseek-v3">&#128300; deepseek-v3</option>
+          </select>
+          <div
+            class="api-key-badge"
+            id="apiKeyBadge"
+            onclick="openApiKeyModal()"
+            title="Cau hinh API Key"
+          >
+            <span class="api-key-dot" id="apiKeyDot"></span>
+            <span id="apiKeyLabel">API Key</span>
+          </div>
+        </div>
+      </div>
+      <div class="main">
+        <div class="sidebar">
+          <div class="sidebar-header">
+            <span class="sidebar-title">&#128193; File Explorer</span>
+            <div class="sidebar-actions">
+              <button
+                class="icon-btn"
+                onclick="saveState();showToast('Da luu project')"
+                title="Luu project"
+              >
+                &#128190;
+              </button>
+              <button
+                class="icon-btn"
+                onclick="exportZip()"
+                title="Export ZIP toàn bộ project"
+              >
+                &#128230; ZIP
+              </button>
+              <button
+                class="icon-btn"
+                onclick="copyAllProject()"
+                title="Copy toan bo project"
+              >
+                &#128203; All
+              </button>
+              <button
+                class="icon-btn"
+                onclick="clearProject()"
+                title="Xoa project"
+              >
+                &#128465;
+              </button>
+            </div>
+          </div>
+          <div class="github-panel">
+            <div class="github-panel-title">&#128025; GitHub Context</div>
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <div class="github-input-row">
+                <input
+                  class="github-input"
+                  id="githubToken"
+                  type="password"
+                  placeholder="GitHub Token (ghp_...)"
+                  style="font-size: 11px"
+                />
+                <button
+                  class="github-connect-btn"
+                  onclick="saveGithubToken()"
+                  style="
+                    background: rgba(139, 92, 246, 0.2);
+                    border-color: rgba(139, 92, 246, 0.4);
+                    color: #a78bfa;
+                    font-size: 11px;
+                  "
+                >
+                  Token
+                </button>
+              </div>
+              <div class="github-input-row">
+                <input
+                  class="github-input"
+                  id="githubUrlFE"
+                  type="text"
+                  placeholder="Frontend repo URL"
+                />
+                <button
+                  class="github-connect-btn"
+                  id="githubConnectBtnFE"
+                  onclick="connectGithub('fe')"
+                  style="
+                    background: rgba(96, 165, 250, 0.2);
+                    border-color: rgba(96, 165, 250, 0.4);
+                    color: #60a5fa;
+                  "
+                >
+                  FE
+                </button>
+              </div>
+              <div class="github-input-row">
+                <input
+                  class="github-input"
+                  id="githubUrlBE"
+                  type="text"
+                  placeholder="Backend repo URL"
+                />
+                <button
+                  class="github-connect-btn"
+                  id="githubConnectBtnBE"
+                  onclick="connectGithub('be')"
+                  style="
+                    background: rgba(52, 211, 153, 0.2);
+                    border-color: rgba(52, 211, 153, 0.4);
+                    color: #34d399;
+                  "
+                >
+                  BE
+                </button>
+              </div>
+            </div>
+            <div
+              id="githubTokenStatus"
+              style="margin-top: 6px; font-size: 11px; display: none"
+            ></div>
+            <div class="github-status" id="githubStatusFE"></div>
+            <div class="github-status" id="githubStatusBE"></div>
+          </div>
+          <div id="projectInfo" class="project-info"></div>
+          <div class="file-tree" id="fileTree">
+            <div class="tree-empty">
+              Chua co du an nao.<br /><br />Hay mo ta du an ban muon tao o khung
+              chat ben phai!
+            </div>
+          </div>
+        </div>
+        <div class="right-panel">
+          <div class="code-viewer">
+            <div class="code-header">
+              <span class="code-filename" id="codeFilename"
+                >Chua chon file</span
+              >
+              <div class="code-actions">
+                <span
+                  id="lineCounter"
+                  style="
+                    font-size: 11px;
+                    color: #475569;
+                    margin-right: 4px;
+                    display: none;
+                  "
+                ></span>
+                <button
+                  class="icon-btn"
+                  onclick="copyCurrentFile()"
+                  id="btnCopyFile"
+                  style="display: none"
+                >
+                  &#128203; Copy
+                </button>
+                <button
+                  class="icon-btn"
+                  onclick="downloadCurrentFile()"
+                  id="btnDownloadFile"
+                  style="display: none"
+                >
+                  &#11015; Tai
+                </button>
+              </div>
+            </div>
+            <div class="code-body" id="codeBody">
+              <div class="code-placeholder">
+                <span style="font-size: 40px">&#128193;</span>
+                <span>Chon mot file de xem noi dung</span>
+              </div>
+            </div>
+          </div>
+          <div class="chat-panel">
+            <div class="chat-header">
+              <span class="chat-title" id="chatTitle"
+                >&#127959; Project Mode — Mo ta du an cua ban</span
+              >
+              <div class="chat-header-actions">
+                <button
+                  class="icon-btn"
+                  onclick="testHunksSystem()"
+                  title="Test hunks system"
+                >
+                  🧪 Test
+                </button>
+                <button
+                  class="icon-btn"
+                  onclick="regenerateProject()"
+                  id="btnRegenerate"
+                  style="display: none"
+                >
+                  &#128260; Tao lai
+                </button>
+                <button class="icon-btn" onclick="clearChat()">
+                  &#128465; Xoa chat
+                </button>
+              </div>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+              <div class="msg bot">
+                <div class="msg-avatar">&#129302;</div>
+                <div class="msg-bubble">
+                  Xin chào! Tôi là <strong>Project Builder AI</strong> — được
+                  nâng cấp với công nghệ <strong>HUNKS</strong> siêu thông
+                  minh!<br /><br />
+
+                  <strong>🎯 HUNKS System - ĐÃ FIX BUG!</strong><br />
+                  &#8226; ✅ <strong>Fixed emoji-wrapped JSON parsing</strong
+                  ><br />
+                  &#8226; ✅ <strong>Enhanced error handling</strong><br />
+                  &#8226; ✅
+                  <strong>Surgical code edits - bảo toàn 100% logic cũ</strong
+                  ><br />
+                  &#8226; 🧪 <strong>Test button để verify system</strong
+                  ><br /><br />
+
+                  <strong>&#127959; Project Mode</strong> — sinh backend +
+                  frontend sandbox<br />
+                  <strong>&#9999; Patch Mode</strong> — surgical edits với
+                  HUNKS<br />
+                  <strong>&#128196; Analyze Mode</strong> — paste đề bài, tôi
+                  implement chính xác<br /><br />
+
+                  <strong>Workflow thông minh:</strong> ĐỌC code cũ → XÁC ĐỊNH
+                  hunks → APPLY surgical changes<br /><br />
+
+                  <strong>🧪 Click "Test" button</strong> ở header để verify
+                  HUNKS system hoạt động!<br /><br />
+
+                  Bạn muốn tạo dự án mới hay sửa code hiện có?
+                </div>
+              </div>
+            </div>
+            <div class="quick-actions" id="quickActions">
+              <button class="quick-btn" onclick="quickAction('todo')">
+                &#9989; Todo App
+              </button>
+              <button class="quick-btn" onclick="quickAction('ecommerce')">
+                &#128722; E-commerce
+              </button>
+              <button class="quick-btn" onclick="quickAction('dashboard')">
+                &#128202; Dashboard
+              </button>
+              <button
+                class="quick-btn"
+                onclick="quickAction('auth')"
+                style="
+                  background: rgba(251, 191, 36, 0.1);
+                  border-color: rgba(251, 191, 36, 0.35);
+                  color: #fbbf24;
+                "
+              >
+                &#128273; Auth/JWT
+              </button>
+              <button
+                class="quick-btn"
+                onclick="quickAction('realtime')"
+                style="
+                  background: rgba(96, 165, 250, 0.1);
+                  border-color: rgba(96, 165, 250, 0.35);
+                  color: #60a5fa;
+                "
+              >
+                &#128172; Real-time Chat
+              </button>
+              <button class="quick-btn" onclick="quickAction('game')">
+                &#127918; Mini Game
+              </button>
+              <button class="quick-btn" onclick="quickAction('api')">
+                &#128296; REST API
+              </button>
+              <button
+                class="quick-btn"
+                onclick="quickAction('analyze')"
+                style="
+                  background: rgba(168, 85, 247, 0.15);
+                  border-color: rgba(168, 85, 247, 0.4);
+                  color: #c084fc;
+                "
+              >
+                &#128196; Phân tích Đề bài
+              </button>
+            </div>
+            <div class="chat-input-area">
+              <textarea
+                class="chat-textarea"
+                id="chatInput"
+                placeholder="Mo ta du an ban muon tao... (Enter gui, Shift+Enter xuong dong)"
+                rows="1"
+              ></textarea>
+              <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                Gui &#10148;
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <!-- API Key Modal -->
+    <div class="modal-overlay hidden" id="apiKeyModal">
+      <div class="modal-box">
+        <div class="modal-title">&#128273; Cau hinh API Key</div>
+        <div class="modal-desc" id="apiKeyModalDesc">
+          Nhap API Key <strong style="color: #34d399">sk-xxxxx</strong> tu
+          <a
+            href="https://platform.xiaomimimo.com/console/api-keys"
+            target="_blank"
+            >platform.xiaomimimo.com</a
+          >.<br />
+          Key duoc luu trong <strong>localStorage</strong> cua trinh duyet.
+        </div>
+        <input
+          class="modal-input"
+          id="apiKeyInput"
+          type="password"
+          placeholder="sk-..."
+          autocomplete="off"
+        />
+        <div class="modal-actions">
+          <button class="modal-save-btn" onclick="saveApiKey()">
+            &#128190; Luu &amp; Dong
+          </button>
+          <button class="modal-skip-btn" onclick="closeApiKeyModal()">
+            Dong
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analyze Modal -->
+    <div class="modal-overlay hidden" id="analyzeModal">
+      <div class="modal-box" style="width: 560px; max-width: 95vw">
+        <div class="modal-title">&#128196; Phân tích Đề bài</div>
+        <div class="modal-desc">
+          Dán toàn bộ
+          <strong style="color: #c084fc">đề bài / yêu cầu bài tập</strong> vào
+          đây.<br />
+          Bot sẽ <strong>đọc code hiện có</strong> trong project/GitHub rồi sinh
+          code chính xác để thực hiện yêu cầu.
+        </div>
+        <textarea
+          class="modal-input"
+          id="analyzeInput"
+          rows="10"
+          placeholder="Dán đề bài vào đây... (ví dụ: Problem 1: Simple Login...)"
+          style="
+            height: 220px;
+            resize: vertical;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            line-height: 1.6;
+          "
+        ></textarea>
+        <div class="modal-actions">
+          <button
+            class="modal-save-btn"
+            onclick="submitAnalyze()"
+            style="background: linear-gradient(135deg, #a855f7, #7c3aed)"
+          >
+            &#128640; Phân tích &amp; Sinh code
+          </button>
+          <button class="modal-skip-btn" onclick="closeAnalyzeModal()">
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ============================================================
+      // CONFIG — dien vao day de khoi phai nhap lai moi lan
+      // ============================================================
+      var HARDCODED_KEY = "sk-szzmmrabfajzt0k62syo5adxhoxq2xg0chzfzzg9zrdvbhxr"; // vi du: 'sk-xxxxxxxxxxxxxxxx'
+      var HARDCODED_GH_TOKEN = "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"; // vi du: 'ghp_xxxxxxxxxxxxxxxx'
+      var HARDCODED_FE_REPO = "https://github.com/rahul2ka6-cmd/FE"; // vi du: 'https://github.com/user/frontend-repo'
+      var HARDCODED_BE_REPO =
+        "https://github.com/rahul2ka6-cmd/photo-sharing-server-BE-";
+      // ============================================================
+      var API_KEY = HARDCODED_KEY || localStorage.getItem("mimo_api_key") || "";
+      var API_URL = "https://api.xiaomimimo.com/v1/chat/completions";
+      var GITHUB_TOKEN =
+        HARDCODED_GH_TOKEN || localStorage.getItem("github_token") || "";
+      var STORE = {
+        PROJECT: "xai_project",
+        FILES: "xai_files",
+        PATCH_HIST: "xai_patch_hist",
+        CHAT_HIST: "xai_chat_hist",
+      };
+
+      // ===== STATE =====
+      var state = {
+        mode: "project",
+        project: null,
+        files: {},
+        selectedFile: null,
+        isGenerating: false,
+        lastPrompt: "",
+      };
+      var chatHistory = [];
+      var projectChatHistory = [];
+      var _snapVer = 0;
+      function bumpSnapVer() {
+        _snapVer++;
+      }
+
+      // ===== SYSTEM PROMPTS =====
+      var PROJECT_SYS = `You are an elite senior full-stack architect with 15+ years of experience. Your mission: design and build production-quality projects optimized for CodeSandbox deployment.
+
+ARCHITECTURE RULES:
+- Fullstack projects: backend/ (Node.js/Express) + frontend/ (HTML/CSS/JS) as separate sandboxes
+- Backend: Express + cors + helmet basics + process.env.PORT||3000 + structured in-memory storage with proper data models
+- Frontend: Vanilla HTML/CSS/JS with responsive design, use const API_URL = "https://YOUR_BE_SANDBOX_URL" as placeholder
+- Always generate a proper README.md with step-by-step CodeSandbox deploy guide
+
+CODE QUALITY STANDARDS:
+1. LANGUAGE: Reply explanations in Vietnamese, all code in English
+2. MODERN JS: const/let only (no var), async/await, optional chaining (?.), nullish coalescing (??), destructuring
+3. DEFENSIVE CODE: Always validate req.body exists before destructuring. Check typeof before calling string/array methods. Wrap ALL async ops in try/catch
+4. ERROR HANDLING: Return { error: "message", code: "ERROR_CODE" } for all errors. Never let unhandled rejections crash the server
+5. SECURITY BASICS: Sanitize inputs, avoid eval(), use parameterized patterns, set proper CORS origins
+6. CLEAN CODE: Self-documenting names, 2-space indent, max ~80 chars/line, JSDoc comments for complex functions
+7. STRUCTURE: Separate concerns — routes/, models/, middleware/, utils/ as needed
+8. COMPLETENESS: Every file must be 100% runnable with zero modifications except replacing API_URL placeholder
+
+BACKEND PATTERNS:
+- Use a central errorHandler middleware
+- Consistent response format: { data: ..., message: "..." } for success, { error: "...", code: "..." } for errors
+- Add request validation helpers
+- Use uuid or Date.now() for IDs
+
+FRONTEND PATTERNS:
+- Single-page with smooth transitions
+- Loading states on all async operations  
+- Error display in UI (never just console.log)
+- Mobile-responsive with CSS Grid/Flexbox
+- Accessible: proper labels, ARIA where needed`;
+
+      var CHAT_SYS = `You are a world-class senior software engineer and mentor. Your expertise spans full-stack web development, system design, algorithms, DevOps, and software architecture.
+
+RESPONSE RULES:
+1. Reply in Vietnamese when user writes Vietnamese, English otherwise
+2. Be direct and practical — give working code, not theory
+3. Always use code blocks with correct language tags
+4. For bugs: identify root cause first, then fix
+5. For architecture questions: give pros/cons, then recommendation
+6. For code reviews: point out issues by category (bugs, performance, security, style)
+7. Include edge cases and potential pitfalls in your answers
+8. When showing code: explain key decisions inline with comments`;
+
+      var PATCH_SYS = `You are a precise code editor. Your job: make SURGICAL changes to existing files using HUNKS (small diff fragments), not full file rewrites.
+
+━━━ CRITICAL RULE: HUNKS, NOT FULL FILES ━━━
+
+Instead of returning complete files (which causes rewrites), you return SMALL HUNKS - just the exact lines that need to change.
+
+FORMAT - Use "hunks" instead of "content":
+
+\`\`\`json
+{
+  "summary": "Brief Vietnamese description of what you changed",
+  "patches": [
+    {
+      "path": "server.js",
+      "hunks": [
+        {
+          "oldStr": "app.use('/api/users', userRoutes);",
+          "newStr": "app.use('/api/users', userRoutes);\napp.use('/api/auth', authRoutes);"
+        }
+      ]
+    },
+    {
+      "path": "routes/auth.js",
+      "content": "COMPLETE content here - only for NEW files"
+    }
+  ]
+}
+\`\`\`
+
+━━━ WHEN TO USE HUNKS VS CONTENT ━━━
+
+✅ **Use "hunks"** for EXISTING files - surgical insertions:
+- Add 1-2 routes to existing router
+- Add 1-3 fields to existing schema  
+- Add 1-2 imports to existing file
+- Insert middleware line in existing server.js
+
+✅ **Use "content"** ONLY for COMPLETELY NEW files:
+- New middleware file that doesn't exist
+- New route file that doesn't exist
+- New component that doesn't exist
+
+━━━ HUNK PRINCIPLES ━━━
+
+1. **EXACT MATCH**: "oldStr" must exist EXACTLY in the current file
+2. **MINIMAL SCOPE**: Include just enough context to be unique (2-3 lines)
+3. **PRESERVE EVERYTHING**: "newStr" = oldStr + your additions (never remove existing code)
+
+━━━ EXAMPLES ━━━
+
+**❌ WRONG - Full file rewrite:**
+\`\`\`json
+{
+  "patches": [
+    { "path": "user.js", "content": "const users = []\nfunction login() {}" }
+  ]
+}
+\`\`\`
+← This destroys existing users array!
+
+**✅ CORRECT - Surgical hunk:**
+\`\`\`json
+{
+  "patches": [
+    {
+      "path": "user.js", 
+      "hunks": [
+        {
+          "oldStr": "function getUserById(id) {\n  return users.find(u => u.id === id);\n}",
+          "newStr": "function getUserById(id) {\n  return users.find(u => u.id === id);\n}\n\nfunction login(email, password) {\n  return users.find(u => u.email === email && u.password === password);\n}"
+        }
+      ]
+    }
+  ]
+}
+\`\`\`
+
+**Real scenario - Add JWT middleware:**
+\`\`\`json
+{
+  "summary": "Thêm JWT middleware vào server hiện có",
+  "patches": [
+    {
+      "path": "server.js",
+      "hunks": [
+        {
+          "oldStr": "const userRoutes = require('./routes/users');\nconst app = express();",
+          "newStr": "const userRoutes = require('./routes/users');\nconst authMiddleware = require('./middleware/auth');\nconst app = express();"
+        },
+        {
+          "oldStr": "app.use('/api/users', userRoutes);",
+          "newStr": "app.use('/api/users', authMiddleware, userRoutes);"
+        }
+      ]
+    },
+    {
+      "path": "middleware/auth.js",
+      "content": "const jwt = require('jsonwebtoken');\n\nmodule.exports = (req, res, next) => {\n  const token = req.header('Authorization')?.replace('Bearer ', '');\n  if (!token) return res.status(401).json({ error: 'Access denied' });\n  \n  try {\n    const decoded = jwt.verify(token, 'secret');\n    req.user = decoded;\n    next();\n  } catch (err) {\n    res.status(400).json({ error: 'Invalid token' });\n  }\n};"
+    }
+  ]
+}
+\`\`\`
+
+━━━ FORBIDDEN ACTIONS ━━━
+
+❌ Never use "content" for existing files - this rewrites them
+❌ Never return hunks that remove existing code  
+❌ Never change variable names or function signatures in hunks
+❌ Never include entire files in hunks - use minimal context only
+
+The goal: Make precise surgical edits that preserve 100% of existing functionality while adding exactly what's requested.`;
+
+      // ===== QUICK PROMPTS =====
+      var quickPrompts = {
+        todo: 'Tạo ứng dụng Todo App fullstack production-ready:\n- Backend: Node.js/Express REST API với CRUD todos (id, title, description, status: pending/in-progress/done, priority: low/medium/high, createdAt, updatedAt), filter theo status & priority, search theo title, CORS enabled, proper error handling, in-memory storage với data validation\n- Frontend: HTML/CSS/JS responsive, drag-to-reorder, filter bar, search, priority badges màu sắc, animations mượt, dark theme\n- 2 sandbox riêng trên CodeSandbox. FE dùng const API_URL = "https://YOUR_BE_SANDBOX_URL"',
+        ecommerce:
+          "Tạo E-commerce App fullstack:\n- Backend: Node.js/Express API với products (CRUD, search, filter theo category/price), cart (add/remove/update qty, tính total), orders (checkout, order history), in-memory storage, CORS\n- Frontend: HTML/CSS/JS - product grid với ảnh placeholder, filter sidebar, cart drawer, checkout form, order confirmation, responsive mobile-first\n- 2 sandbox CodeSandbox",
+        dashboard:
+          "Tạo Admin Dashboard fullstack:\n- Backend: Node.js/Express API - stats endpoint (users count, revenue, orders, growth %), users CRUD, recent activities, in-memory với realistic mock data\n- Frontend: HTML/CSS/JS - sidebar navigation, KPI cards với trend arrows, line/bar charts bằng Canvas API, users table với pagination, responsive\n- 2 sandbox CodeSandbox",
+        auth: "Tạo Auth System fullstack:\n- Backend: Node.js/Express với JWT authentication - register/login/logout/me endpoints, bcryptjs password hashing, JWT middleware bảo vệ routes, refresh token, in-memory user store\n- Frontend: HTML/CSS/JS - login/register forms với validation, protected dashboard page, token management trong localStorage, auto-redirect, show user info\n- 2 sandbox CodeSandbox",
+        realtime:
+          "Tạo Real-time Chat App:\n- Backend: Node.js/Express + Socket.io - rooms, broadcast messages, typing indicators, online users list, message history (last 50), in-memory\n- Frontend: HTML/CSS/JS + Socket.io client - chat UI như Telegram, room list, message bubbles, typing indicator, online badges, emoji picker đơn giản\n- 2 sandbox CodeSandbox",
+        game: "Tạo game Snake nâng cao bằng HTML5 Canvas:\n- Single frontend sandbox trên CodeSandbox, không cần BE\n- Features: smooth 60fps animation, 3 difficulty levels (speed), score + high score (localStorage), combo multiplier, power-ups (speed boost, slow, bonus points), particle effects khi ăn, game over screen với animation, mobile swipe controls, pause/resume\n- Thiết kế đẹp với neon glow effect",
+        api: 'Tạo REST API production-grade:\n- Node.js/Express, resource "products" (id, name, description, price, category, stock, createdAt)\n- Full CRUD + search (?q=) + filter (?category=&minPrice=&maxPrice=) + pagination (?page=&limit=) + sort (?sort=price&order=asc)\n- Middleware: cors, request logging, rate limiting đơn giản, input validation, error handler tập trung\n- Response format chuẩn: { data, message, pagination }\n- README deploy CodeSandbox chi tiết',
+        analyze: "__ANALYZE__",
+      };
+
+      // ===== PERSIST =====
+      function saveState() {
+        try {
+          if (state.project) {
+            localStorage.setItem(STORE.PROJECT, JSON.stringify(state.project));
+            var slim = {};
+            var FILE_SAVE_LIMIT = 80000;
+            Object.keys(state.files).forEach(function (p) {
+              var f = state.files[p];
+              if (f.content && f.content.length > FILE_SAVE_LIMIT)
+                console.warn(
+                  "[saveState] File truncated for localStorage:",
+                  p,
+                  "(" + f.content.length + " chars)"
+                );
+              slim[p] = {
+                content: f.content
+                  ? f.content.substring(0, FILE_SAVE_LIMIT)
+                  : null,
+                status: f.status,
+                description: f.description,
+              };
+            });
+            localStorage.setItem(STORE.FILES, JSON.stringify(slim));
+          }
+          var ch = projectChatHistory
+            .map(function (m) {
+              if (m.role === "assistant") {
+                var p = parsePatch(m.content);
+                if (p)
+                  return {
+                    role: "assistant",
+                    content: p.summary || "Da cap nhat.",
+                  };
+              }
+              return m;
+            })
+            .slice(-20);
+          localStorage.setItem(STORE.PATCH_HIST, JSON.stringify(ch));
+          localStorage.setItem(
+            STORE.CHAT_HIST,
+            JSON.stringify(chatHistory.slice(-20))
+          );
+        } catch (e) {
+          console.warn("saveState:", e.message);
+        }
+      }
+
+      function restoreState() {
+        try {
+          var proj = localStorage.getItem(STORE.PROJECT);
+          var files = localStorage.getItem(STORE.FILES);
+          if (proj && files) {
+            state.project = JSON.parse(proj);
+            state.files = JSON.parse(files);
+            renderTree();
+            showProjInfo(state.project);
+            document.getElementById("btnRegenerate").style.display =
+              "inline-block";
+            var paths = Object.keys(state.files);
+            if (paths.length) selectFile(paths[0]);
+            updateProjectChatTitle();
+            showToast("Da khoi phuc: " + state.project.project_name);
+          }
+          var ph = localStorage.getItem(STORE.PATCH_HIST);
+          if (ph) projectChatHistory = JSON.parse(ph);
+          var cht = localStorage.getItem(STORE.CHAT_HIST);
+          if (cht) chatHistory = JSON.parse(cht);
+        } catch (e) {
+          console.warn("restoreState:", e.message);
+        }
+      }
+
+      // ===== SNAPSHOT =====
+      function buildProjectSnapshot(relevantPaths) {
+        var lines = [];
+        if (state.project) {
+          lines.push("Project: " + state.project.project_name);
+          if (state.project.description)
+            lines.push("Description: " + state.project.description);
+          if (state.project.tech_stack)
+            lines.push("Tech stack: " + state.project.tech_stack.join(", "));
+          lines.push("");
+        }
+        var allPaths = Object.keys(state.files);
+        lines.push("=== FILE STRUCTURE ===");
+        allPaths.forEach(function (p) {
+          lines.push("  " + p);
+        });
+        lines.push("");
+        var toSend = relevantPaths
+          ? relevantPaths.filter(function (p) {
+              return state.files[p];
+            })
+          : allPaths;
+        var totalChars = 0,
+          MAX_TOTAL = 20000,
+          MAX_FILE = 8000;
+        lines.push("=== FILE CONTENTS ===");
+        toSend.forEach(function (path) {
+          if (totalChars >= MAX_TOTAL) return;
+          var content = state.files[path].content || "";
+          var preview =
+            content.length > MAX_FILE
+              ? content.substring(0, MAX_FILE) + "\n// ...(truncated)"
+              : content;
+          totalChars += preview.length;
+          lines.push("### " + path);
+          lines.push("```" + path.split(".").pop());
+          lines.push(preview);
+          lines.push("```\n");
+        });
+        return lines.join("\n");
+      }
+
+      function guessRelevantFiles(text) {
+        text = text.toLowerCase();
+        var allPaths = Object.keys(state.files);
+        if (!allPaths.length) return null;
+        var scored = allPaths.map(function (p) {
+          var score = 0,
+            ext = p.split(".").pop().toLowerCase();
+          var base = p
+            .split("/")
+            .pop()
+            .replace(/\.[^.]+$/, "")
+            .toLowerCase();
+          if (text.indexOf(p.toLowerCase()) !== -1) score += 10;
+          if (text.indexOf(base) !== -1) score += 6;
+          var kwMap = {
+            "css|mau|color|giao dien|style|layout": ["css", "scss"],
+            "js|javascript|logic|ham|function": ["js", "ts", "jsx", "tsx"],
+            "html|trang|page|view": ["html", "vue"],
+            "api|server|route": ["js", "ts", "py", "php"],
+          };
+          Object.keys(kwMap).forEach(function (kw) {
+            if (
+              kw.split("|").some(function (k) {
+                return text.indexOf(k) !== -1;
+              }) &&
+              kwMap[kw].indexOf(ext) !== -1
+            )
+              score += 4;
+          });
+          return { path: p, score: score };
+        });
+        scored.sort(function (a, b) {
+          return b.score - a.score;
+        });
+        var top = scored
+          .filter(function (x) {
+            return x.score > 0;
+          })
+          .slice(0, 4)
+          .map(function (x) {
+            return x.path;
+          });
+        return top.length ? top : null;
+      }
+
+      function estimateTokens(text) {
+        return Math.ceil(text.length / 4);
+      }
+
+      // ===== GITHUB =====
+      var githubCtx = {
+        fe: { connected: false, summary: "", label: "" },
+        be: { connected: false, summary: "", label: "" },
+      };
+      // GITHUB_TOKEN da khai bao o dong 279 (ho tro HARDCODED_GH_TOKEN)
+
+      function saveGithubToken() {
+        var val = document.getElementById("githubToken").value.trim();
+        if (!val) {
+          showToast("Vui long nhap GitHub Token");
+          return;
+        }
+        GITHUB_TOKEN = val;
+        localStorage.setItem("github_token", val);
+        var el = document.getElementById("githubTokenStatus");
+        el.style.display = "block";
+        el.style.color = "#a78bfa";
+        el.innerHTML =
+          "&#10003; Token da luu (" + val.substring(0, 8) + "...) — 5000 req/h";
+        showToast("Da luu GitHub Token");
+      }
+
+      function parseGithubUrl(url) {
+        url = url.trim().replace(/\/$/, "");
+        var m = url.match(/github\.com\/([^\/]+)\/([^\/\s#?]+)/);
+        if (!m) return null;
+        return { owner: m[1], repo: m[2].replace(/\.git$/, "") };
+      }
+
+      async function connectGithub(side) {
+        // side = 'fe' or 'be'
+        var inputId = side === "fe" ? "githubUrlFE" : "githubUrlBE";
+        var btnId = side === "fe" ? "githubConnectBtnFE" : "githubConnectBtnBE";
+        var statusId = side === "fe" ? "githubStatusFE" : "githubStatusBE";
+        var sideLabel = side === "fe" ? "Frontend" : "Backend";
+
+        var url = document.getElementById(inputId).value.trim();
+        if (!url) {
+          showGithubStatus(
+            statusId,
+            "error",
+            "Vui long nhap URL " + sideLabel + " repo"
+          );
+          return;
+        }
+        var parsed = parseGithubUrl(url);
+        if (!parsed) {
+          showGithubStatus(statusId, "error", "URL khong hop le");
+          return;
+        }
+
+        document.getElementById(btnId).disabled = true;
+        showGithubStatus(
+          statusId,
+          "loading",
+          "&#9203; Dang ket noi " + parsed.owner + "/" + parsed.repo + "..."
+        );
+
+        try {
+          var repoInfo = await fetchGithubAPI(
+            "repos/" + parsed.owner + "/" + parsed.repo
+          );
+          var branch = repoInfo.default_branch || "main";
+          var treeData = await fetchGithubAPI(
+            "repos/" +
+              parsed.owner +
+              "/" +
+              parsed.repo +
+              "/git/trees/" +
+              branch +
+              "?recursive=1"
+          );
+          var allFiles = (treeData.tree || []).filter(function (f) {
+            return f.type === "blob";
+          });
+
+          // Lay tat ca file code quan trong — khong gioi han depth
+          var priority = [
+            "README.md",
+            "package.json",
+            "requirements.txt",
+            "go.mod",
+            "pom.xml",
+            ".env.example",
+            "Dockerfile",
+            "docker-compose.yml",
+            "backend/package.json",
+            "frontend/package.json",
+            "server.js",
+            "app.js",
+            "index.js",
+            "main.js",
+            "main.py",
+            "app.py",
+          ];
+          var codeExts = [
+            "js",
+            "ts",
+            "py",
+            "java",
+            "go",
+            "html",
+            "css",
+            "jsx",
+            "tsx",
+            "vue",
+            "php",
+            "json",
+            "env",
+            "md",
+          ];
+          // Loai bo file khong can thiet
+          var skipPatterns = [
+            "node_modules",
+            "dist",
+            "build",
+            ".git",
+            "coverage",
+            "__pycache__",
+            ".min.js",
+            ".min.css",
+            "package-lock",
+            "yarn.lock",
+          ];
+          var cleanFiles = allFiles.filter(function (f) {
+            return !skipPatterns.some(function (skip) {
+              return f.path.indexOf(skip) !== -1;
+            });
+          });
+
+          var sampled = [];
+          // 1. Priority files truoc
+          priority.forEach(function (n) {
+            var f = cleanFiles.find(function (x) {
+              return x.path === n || x.path.endsWith("/" + n);
+            });
+            if (f && sampled.indexOf(f) === -1) sampled.push(f);
+          });
+          // 2. Tat ca file code (khong gioi han depth)
+          cleanFiles
+            .filter(function (f) {
+              var ext = f.path.split(".").pop().toLowerCase();
+              return codeExts.indexOf(ext) !== -1 && sampled.indexOf(f) === -1;
+            })
+            .forEach(function (f) {
+              sampled.push(f);
+            });
+          // Gioi han 30 files doc content (tang len tu 15)
+          sampled = sampled.slice(0, 50);
+
+          showGithubStatus(
+            statusId,
+            "loading",
+            "&#9203; Doc " +
+              sampled.length +
+              "/" +
+              cleanFiles.length +
+              " files..."
+          );
+          var contents = {};
+          for (var i = 0; i < sampled.length; i++) {
+            try {
+              var fd = await fetchGithubAPI(
+                "repos/" +
+                  parsed.owner +
+                  "/" +
+                  parsed.repo +
+                  "/contents/" +
+                  sampled[i].path +
+                  "?ref=" +
+                  branch
+              );
+              if (fd.content) {
+                var dec = atob(fd.content.replace(/\n/g, ""));
+                // File nho hon 500 chars doc full, lon hon thi cat
+                contents[sampled[i].path] =
+                  dec.length > 5000
+                    ? dec.substring(0, 5000) + "\n// ...(truncated)"
+                    : dec;
+              }
+            } catch (e) {}
+          }
+
+          // Build summary — hien thi TOAN BO cay file
+          var lines = [
+            "=== GITHUB " + sideLabel.toUpperCase() + " REPO ===",
+            "Repo: " + repoInfo.full_name,
+            "Role: " +
+              sideLabel +
+              (side === "fe" ? " (Frontend)" : " (Backend — REST API)"),
+          ];
+          if (repoInfo.description) lines.push("Desc: " + repoInfo.description);
+          if (repoInfo.language) lines.push("Language: " + repoInfo.language);
+          lines.push("");
+          lines.push(
+            "=== FULL FILE TREE (" + cleanFiles.length + " files) ==="
+          );
+          cleanFiles.forEach(function (f) {
+            lines.push("  " + f.path);
+          }); // Hien thi TẤT CA
+          lines.push("");
+          lines.push(
+            "=== FILE CONTENTS (" + Object.keys(contents).length + " files) ==="
+          );
+          Object.keys(contents).forEach(function (p) {
+            lines.push("--- " + p + " ---");
+            lines.push(contents[p]);
+            lines.push("");
+          });
+          lines.push("=== END " + sideLabel.toUpperCase() + " REPO ===");
+
+          githubCtx[side].connected = true;
+          githubCtx[side].summary = lines.join("\n");
+          githubCtx[side].label = parsed.owner + "/" + parsed.repo;
+          githubCtx[side].owner = parsed.owner;
+          githubCtx[side].repo = parsed.repo;
+          githubCtx[side].branch = branch;
+
+          var color = side === "fe" ? "#60a5fa" : "#34d399";
+          showGithubStatus(
+            statusId,
+            "connected",
+            '<span class="github-ctx-badge" style="border-color:' +
+              color +
+              ";color:" +
+              color +
+              '">' +
+              sideLabel +
+              " &#128025; " +
+              parsed.owner +
+              "/" +
+              parsed.repo +
+              "</span>" +
+              '<span class="github-files-count"> ' +
+              allFiles.length +
+              " files</span>" +
+              '<button class="github-clear-btn" onclick="pullGithubToWorkspace(\'' +
+              side +
+              '\')" title="Pull code into Workspace" style="margin-right:4px">&#11015;&#65039;</button>' +
+              '<button class="github-clear-btn" onclick="disconnectGithub(\'' +
+              side +
+              "')\">&#10005;</button>"
+          );
+          showToast(
+            "Da ket noi " + sideLabel + ": " + parsed.owner + "/" + parsed.repo
+          );
+
+          // Auto-pull
+          pullGithubToWorkspace(side);
+        } catch (err) {
+          showGithubStatus(
+            statusId,
+            "error",
+            "&#10060; " + (err.message || "Loi ket noi")
+          );
+        }
+        document.getElementById(btnId).disabled = false;
+      }
+
+      async function pullGithubToWorkspace(side) {
+        if (!githubCtx[side] || !githubCtx[side].connected) return;
+        var owner = githubCtx[side].owner;
+        var repo = githubCtx[side].repo;
+        var branch = githubCtx[side].branch;
+        var sideLabel = side === "fe" ? "Frontend" : "Backend";
+        var statusId = side === "fe" ? "githubStatusFE" : "githubStatusBE";
+
+        showGithubStatus(
+          statusId,
+          "loading",
+          "&#9203; Dang pull " + sideLabel + " vao Workspace..."
+        );
+        try {
+          var treeData = await fetchGithubAPI(
+            "repos/" +
+              owner +
+              "/" +
+              repo +
+              "/git/trees/" +
+              branch +
+              "?recursive=1"
+          );
+          var allFiles = (treeData.tree || []).filter(function (f) {
+            return f.type === "blob";
+          });
+
+          var codeExts = [
+            "js",
+            "ts",
+            "py",
+            "java",
+            "go",
+            "html",
+            "css",
+            "jsx",
+            "tsx",
+            "vue",
+            "php",
+            "json",
+            "env",
+            "md",
+          ];
+          var skipPatterns = [
+            "node_modules",
+            "dist",
+            "build",
+            ".git",
+            "coverage",
+            "__pycache__",
+            ".min.js",
+            ".min.css",
+            "package-lock",
+            "yarn.lock",
+          ];
+          var cleanFiles = allFiles.filter(function (f) {
+            var ext = f.path.split(".").pop().toLowerCase();
+            var isCode =
+              codeExts.indexOf(ext) !== -1 ||
+              f.path === "Dockerfile" ||
+              f.path.indexOf(".") === -1;
+            var isSkipped = skipPatterns.some(function (skip) {
+              return f.path.indexOf(skip) !== -1;
+            });
+            return isCode && !isSkipped;
+          });
+
+          // Limit to 150 files to avoid hitting API rate limits
+          var toPull = cleanFiles.slice(0, 150);
+          showGithubStatus(
+            statusId,
+            "loading",
+            "&#9203; Tai " + toPull.length + " files vao Workspace..."
+          );
+
+          var prefix = side === "fe" ? "frontend/" : "backend/";
+          var pulledCount = 0;
+
+          for (var i = 0; i < toPull.length; i++) {
+            try {
+              var fd = await fetchGithubAPI(
+                "repos/" +
+                  owner +
+                  "/" +
+                  repo +
+                  "/contents/" +
+                  toPull[i].path +
+                  "?ref=" +
+                  branch
+              );
+              if (fd.content) {
+                var dec = atob(fd.content.replace(/\n/g, ""));
+                var finalPath = prefix + toPull[i].path;
+                // Clean up double slashes
+                finalPath = finalPath.replace(/\/\//g, "/");
+                state.files[finalPath] = {
+                  content: dec,
+                  status: "synced",
+                  description: "Pulled from GitHub",
+                };
+                pulledCount++;
+              }
+            } catch (e) {}
+            if (i % 10 === 0)
+              showGithubStatus(
+                statusId,
+                "loading",
+                "&#9203; Tai " + i + "/" + toPull.length + " files..."
+              );
+          }
+
+          renderTree();
+          saveState();
+          showToast(
+            "Da pull " + pulledCount + " files " + sideLabel + " vao Workspace!"
+          );
+
+          var color = side === "fe" ? "#60a5fa" : "#34d399";
+          showGithubStatus(
+            statusId,
+            "connected",
+            '<span class="github-ctx-badge" style="border-color:' +
+              color +
+              ";color:" +
+              color +
+              '">' +
+              sideLabel +
+              " &#128025; " +
+              owner +
+              "/" +
+              repo +
+              "</span>" +
+              '<span class="github-files-count"> ' +
+              pulledCount +
+              " files pulled</span>" +
+              '<button class="github-clear-btn" onclick="pullGithubToWorkspace(\'' +
+              side +
+              '\')" title="Pull code into Workspace" style="margin-right:4px">&#11015;&#65039;</button>' +
+              '<button class="github-clear-btn" onclick="disconnectGithub(\'' +
+              side +
+              "')\">&#10005;</button>"
+          );
+        } catch (e) {
+          showToast("Loi pull " + sideLabel + ": " + e.message, "error");
+          // Restore normal status
+          var color = side === "fe" ? "#60a5fa" : "#34d399";
+          showGithubStatus(
+            statusId,
+            "connected",
+            '<span class="github-ctx-badge" style="border-color:' +
+              color +
+              ";color:" +
+              color +
+              '">' +
+              sideLabel +
+              " &#128025; " +
+              owner +
+              "/" +
+              repo +
+              "</span>" +
+              '<button class="github-clear-btn" onclick="pullGithubToWorkspace(\'' +
+              side +
+              '\')" title="Pull code into Workspace" style="margin-right:4px">&#11015;&#65039;</button>' +
+              '<button class="github-clear-btn" onclick="disconnectGithub(\'' +
+              side +
+              "')\">&#10005;</button>"
+          );
+        }
+      }
+
+      function disconnectGithub(side) {
+        githubCtx[side] = { connected: false, summary: "", label: "" };
+        document.getElementById(
+          side === "fe" ? "githubUrlFE" : "githubUrlBE"
+        ).value = "";
+        document.getElementById(
+          side === "fe" ? "githubStatusFE" : "githubStatusBE"
+        ).style.display = "none";
+        showToast(
+          "Da ngat ket noi " + (side === "fe" ? "Frontend" : "Backend")
+        );
+      }
+
+      async function fetchGithubAPI(endpoint) {
+        var headers = { Accept: "application/vnd.github.v3+json" };
+        if (GITHUB_TOKEN) headers["Authorization"] = "Bearer " + GITHUB_TOKEN;
+        var res = await fetch("https://api.github.com/" + endpoint, {
+          headers: headers,
+        });
+        if (!res.ok) {
+          var e = await res.json().catch(function () {
+            return {};
+          });
+          throw new Error(e.message || "GitHub API loi " + res.status);
+        }
+        return res.json();
+      }
+
+      function showGithubStatus(id, type, html) {
+        var el = document.getElementById(id);
+        el.className = "github-status " + type;
+        el.style.display = "flex";
+        el.innerHTML = html;
+      }
+
+      // ===== MODEL =====
+      function getModel() {
+        return document.getElementById("modelSelect").value;
+      }
+
+      // ===== MODE =====
+      function setMode(mode) {
+        state.mode = mode;
+        document
+          .getElementById("btnProjectMode")
+          .classList.toggle("active", mode === "project");
+        document
+          .getElementById("btnChatMode")
+          .classList.toggle("active", mode === "chat");
+        if (mode === "project") {
+          updateProjectChatTitle();
+          document.getElementById("quickActions").style.display = state.project
+            ? "none"
+            : "flex";
+        } else {
+          document.getElementById("chatTitle").textContent =
+            "&#128172; Chat Mode — Hoi dap ve code";
+          document.getElementById("quickActions").style.display = "none";
+          document.getElementById("chatInput").placeholder =
+            "Hoi bat ky cau hoi nao ve code...";
+        }
+      }
+
+      function updateProjectChatTitle() {
+        if (state.project && Object.keys(state.files).length > 0) {
+          document.getElementById("chatTitle").textContent =
+            '&#9999; Patch Mode — "' + state.project.project_name + '"';
+          document.getElementById("chatInput").placeholder =
+            "Mo ta thay doi ban muon... (Enter gui)";
+          document.getElementById("quickActions").style.display = "none";
+        } else {
+          document.getElementById("chatTitle").textContent =
+            "&#127959; Project Mode — Mo ta du an cua ban";
+          document.getElementById("chatInput").placeholder =
+            "Mo ta du an ban muon tao... (Enter gui, Shift+Enter xuong dong)";
+          document.getElementById("quickActions").style.display = "flex";
+        }
+      }
+
+      function quickAction(key) {
+        if (key === "analyze") {
+          openAnalyzeModal();
+          return;
+        }
+        var inp = document.getElementById("chatInput");
+        inp.value = quickPrompts[key];
+        inp.style.height = "auto";
+        inp.style.height = Math.min(inp.scrollHeight, 120) + "px";
+        inp.focus();
+      }
+
+      // ===== CHAT UI =====
+      function clearChat() {
+        if (state.mode === "project") {
+          projectChatHistory = [];
+          localStorage.removeItem(STORE.PATCH_HIST);
+        } else {
+          chatHistory = [];
+          localStorage.removeItem(STORE.CHAT_HIST);
+        }
+        document.getElementById("chatMessages").innerHTML = "";
+        addBotMsg("Chat da duoc xoa. Ban muon lam gi tiep theo?");
+      }
+
+      function clearProject() {
+        state.project = null;
+        state.files = {};
+        state.selectedFile = null;
+        projectChatHistory = [];
+        _snapVer = 0;
+        [STORE.PROJECT, STORE.FILES, STORE.PATCH_HIST].forEach(function (k) {
+          localStorage.removeItem(k);
+        });
+        document.getElementById("fileTree").innerHTML =
+          '<div class="tree-empty">Chua co du an nao.<br><br>Hay mo ta du an ban muon tao o khung chat ben phai!</div>';
+        document.getElementById("projectInfo").style.display = "none";
+        document.getElementById("codeFilename").textContent = "Chua chon file";
+        document.getElementById("codeBody").innerHTML =
+          '<div class="code-placeholder"><span style="font-size:40px">&#128193;</span><span>Chon mot file de xem noi dung</span></div>';
+        document.getElementById("btnCopyFile").style.display = "none";
+        document.getElementById("btnDownloadFile").style.display = "none";
+        document.getElementById("btnRegenerate").style.display = "none";
+        updateProjectChatTitle();
+        showToast("Da xoa project");
+      }
+
+      function regenerateProject() {
+        if (state.lastPrompt) {
+          clearProject();
+          document.getElementById("chatInput").value = state.lastPrompt;
+          sendMessage();
+        }
+      }
+
+      function escHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function renderMd(text) {
+        var blocks = [];
+        text = text.replace(
+          /```(\w*)\n?([\s\S]*?)```/g,
+          function (m, lang, code) {
+            var i = blocks.length;
+            blocks.push("<pre><code>" + escHtml(code.trim()) + "</code></pre>");
+            return "\x00B" + i + "\x00";
+          }
+        );
+        text = escHtml(text);
+        text = text.replace(/`([^`]+)`/g, "<code>$1</code>");
+        text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+        text = text.replace(/\*([^*\n]+)\*/g, "<em>$1</em>");
+        text = text.replace(/^#{1,3} (.+)$/gm, "<strong>$1</strong>");
+        text = text.replace(/^[-*] (.+)$/gm, "<li>$1</li>");
+        text = text.replace(/((?:<li>.*?<\/li>\n?)+)/g, "<ul>$1</ul>");
+        text = text.replace(/\n\n/g, "<br><br>").replace(/\n/g, "<br>");
+        text = text.replace(/\x00B(\d+)\x00/g, function (m, i) {
+          return blocks[+i];
+        });
+        return text;
+      }
+
+      function addUserMsg(text) {
+        var msgs = document.getElementById("chatMessages");
+        var d = document.createElement("div");
+        d.className = "msg user";
+        d.innerHTML =
+          '<div class="msg-avatar">&#128100;</div><div class="msg-bubble">' +
+          escHtml(text) +
+          "</div>";
+        msgs.appendChild(d);
+        msgs.scrollTop = msgs.scrollHeight;
+      }
+
+      function addBotMsg(html) {
+        var msgs = document.getElementById("chatMessages");
+        var d = document.createElement("div");
+        d.className = "msg bot";
+        d.innerHTML =
+          '<div class="msg-avatar">&#129302;</div><div class="msg-bubble">' +
+          renderMd(html) +
+          "</div>";
+        msgs.appendChild(d);
+        msgs.scrollTop = msgs.scrollHeight;
+        return d;
+      }
+
+      function showTyping() {
+        var msgs = document.getElementById("chatMessages");
+        var d = document.createElement("div");
+        d.className = "msg bot";
+        d.id = "typingEl";
+        d.innerHTML =
+          '<div class="msg-avatar">&#129302;</div><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+        msgs.appendChild(d);
+        msgs.scrollTop = msgs.scrollHeight;
+      }
+
+      function hideTyping() {
+        var el = document.getElementById("typingEl");
+        if (el) el.remove();
+      }
+
+      // ===== API =====
+      function callAPI(messages, model, maxTokens) {
+        if (!API_KEY) {
+          openApiKeyModal();
+          return Promise.reject(new Error("Chua co API Key."));
+        }
+        var tokens = maxTokens || 16384;
+        return fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + API_KEY,
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: messages,
+            temperature: 0.7,
+            max_tokens: tokens,
+          }),
+        })
+          .then(function (r) {
+            if (!r.ok)
+              return r.json().then(function (d) {
+                console.error("API Error:", r.status, JSON.stringify(d));
+                var msg = (d.error && d.error.message) || "HTTP " + r.status;
+                if (r.status === 401 || r.status === 403) {
+                  msg = "Invalid API Key — kiem tra lai key sk-...";
+                  openApiKeyModal();
+                }
+                throw new Error(msg);
+              });
+            return r.json();
+          })
+          .then(function (d) {
+            if (!d.choices || !d.choices[0])
+              throw new Error("Phan hoi API khong hop le");
+            return d.choices[0].message.content;
+          });
+      }
+
+      // ===== STREAMING API — dùng cho Chat Mode =====
+      async function callAPIStream(messages, model, onChunk) {
+        if (!API_KEY) {
+          openApiKeyModal();
+          throw new Error("Chua co API Key.");
+        }
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + API_KEY,
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: messages,
+            temperature: 0.7,
+            max_tokens: 8192,
+            stream: true,
+          }),
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          let msg = (d.error && d.error.message) || "HTTP " + res.status;
+          if (res.status === 401 || res.status === 403) {
+            msg = "Invalid API Key — kiem tra lai key sk-...";
+            openApiKeyModal();
+          }
+          throw new Error(msg);
+        }
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let fullText = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split("\n");
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            const data = line.slice(6).trim();
+            if (data === "[DONE]") return fullText;
+            try {
+              const json = JSON.parse(data);
+              const delta = json.choices?.[0]?.delta?.content || "";
+              if (delta) {
+                fullText += delta;
+                onChunk(delta, fullText);
+              }
+            } catch (e) {
+              /* skip malformed chunks */
+            }
+          }
+        }
+        return fullText;
+      }
+
+      // ===== SEND =====
+      function sendMessage() {
+        var inp = document.getElementById("chatInput"),
+          text = inp.value.trim();
+        if (!text || state.isGenerating) return;
+        inp.value = "";
+        inp.style.height = "auto";
+        state.isGenerating = true;
+        document.getElementById("sendBtn").disabled = true;
+        addUserMsg(text);
+
+        if (state.mode === "project") {
+          state.lastPrompt = text;
+
+          // Nếu user paste sẵn patch JSON → apply luôn, không gọi API
+          var inlinePatch = parsePatch(text);
+          if (
+            inlinePatch &&
+            inlinePatch.patches &&
+            inlinePatch.patches.length > 0
+          ) {
+            var changed = applyPatch(inlinePatch);
+            addBotMsg(
+              "&#9989; **" +
+                (inlinePatch.summary || "Da ap dung patch") +
+                "**\n\nDa cap nhat **" +
+                changed +
+                " file**: " +
+                inlinePatch.patches
+                  .map(function (p) {
+                    return "`" + p.path + "`";
+                  })
+                  .join(", ")
+            );
+            saveState();
+            state.isGenerating = false;
+            document.getElementById("sendBtn").disabled = false;
+            return;
+          }
+
+          if (Object.keys(state.files).length > 0) runPatchMode(text);
+          else runProjectMode(text);
+        } else {
+          runChatMode(text);
+        }
+      }
+
+      // ===== ANALYZE MODAL =====
+      function openAnalyzeModal() {
+        document.getElementById("analyzeModal").classList.remove("hidden");
+        document.getElementById("analyzeInput").value = "";
+        setTimeout(function () {
+          document.getElementById("analyzeInput").focus();
+        }, 100);
+      }
+      function closeAnalyzeModal() {
+        document.getElementById("analyzeModal").classList.add("hidden");
+      }
+      function submitAnalyze() {
+        var text = document.getElementById("analyzeInput").value.trim();
+        if (!text) {
+          showToast("Vui long dan de bai vao!");
+          return;
+        }
+        closeAnalyzeModal();
+        // Kiểm tra có project context chưa
+        var hasProject = Object.keys(state.files).length > 0;
+        var hasGithub = githubCtx.fe.connected || githubCtx.be.connected;
+        if (!hasProject && !hasGithub) {
+          showToast("Vui long ket noi GitHub hoac tao project truoc!");
+          addBotMsg(
+            "&#9888; **Chua co context du an!**\n\nDe phan tich de bai chinh xac, ban can:\n- Ket noi GitHub repo (FE/BE) de toi hieu code hien tai\n- Hoac mo ta du an truoc de tao project structure\n\nSau do hay paste de bai lai!"
+          );
+          return;
+        }
+        // Tạo prompt phân tích đề bài
+        var analyzePrompt = buildAnalyzePrompt(text);
+        document.getElementById("chatInput").value = analyzePrompt;
+        document.getElementById("chatInput").style.height = "auto";
+        document.getElementById("chatInput").style.height =
+          Math.min(document.getElementById("chatInput").scrollHeight, 120) +
+          "px";
+        // Tự động gửi
+        sendMessage();
+      }
+
+      function buildAnalyzePrompt(problemText) {
+        return `[ĐỀ BÀI CẦN THỰC HIỆN]
+
+${problemText}
+
+Vui lòng phân tích đề bài trên và sinh ra các thay đổi bằng hệ thống HUNKS. 
+Lưu ý: 
+- Chỉ sinh ra mã JSON hợp lệ theo format đã được quy định trong System Prompt.
+- Đối với file đã tồn tại, BẮT BUỘC dùng mảng "hunks" với "oldStr" và "newStr". Không dùng "content" để ghi đè toàn bộ file.
+- "oldStr" phải khớp CHÍNH XÁC với code hiện tại.
+- Đối với file mới hoàn toàn, dùng "content".`;
+      }
+
+      // ===== CHAT MODE (streaming) =====
+      function runChatMode(text) {
+        chatHistory.push({ role: "user", content: text });
+        showTyping();
+        var msgs = [
+          { role: "system", content: CHAT_SYS + getGithubContextPrompt() },
+        ].concat(chatHistory.slice(-12));
+        var model = getModel();
+
+        // Thử streaming trước, fallback về non-stream nếu lỗi
+        var msgEl = null;
+        var fullReply = "";
+
+        callAPIStream(msgs, model, function (delta, full) {
+          // Lần đầu nhận chunk: xóa typing indicator, tạo bubble
+          if (!msgEl) {
+            hideTyping();
+            var msgs2 = document.getElementById("chatMessages");
+            var d = document.createElement("div");
+            d.className = "msg bot";
+            d.innerHTML =
+              '<div class="msg-avatar">&#129302;</div><div class="msg-bubble" id="streamBubble"></div>';
+            msgs2.appendChild(d);
+            msgs2.scrollTop = msgs2.scrollHeight;
+            msgEl = document.getElementById("streamBubble");
+          }
+          fullReply = full;
+          msgEl.innerHTML = renderMd(full);
+          document.getElementById("chatMessages").scrollTop =
+            document.getElementById("chatMessages").scrollHeight;
+        })
+          .then(function (reply) {
+            hideTyping();
+            if (!msgEl) {
+              addBotMsg(reply || "(Không có phản hồi)");
+            } else {
+              msgEl.innerHTML = renderMd(reply || fullReply);
+              msgEl.id = "";
+            }
+            chatHistory.push({
+              role: "assistant",
+              content: reply || fullReply,
+            });
+            saveState();
+          })
+          .catch(function (err) {
+            // Fallback: non-streaming
+            if (!msgEl) {
+              callAPI(msgs, model)
+                .then(function (reply) {
+                  hideTyping();
+                  chatHistory.push({ role: "assistant", content: reply });
+                  addBotMsg(reply);
+                  saveState();
+                })
+                .catch(function (err2) {
+                  hideTyping();
+                  addBotMsg("&#10060; Lỗi: " + err2.message);
+                })
+                .finally(function () {
+                  state.isGenerating = false;
+                  document.getElementById("sendBtn").disabled = false;
+                });
+              return;
+            }
+            hideTyping();
+            addBotMsg("&#10060; Lỗi: " + err.message);
+            chatHistory.push({
+              role: "assistant",
+              content: "Error: " + err.message,
+            });
+            saveState();
+          })
+          .finally(function () {
+            state.isGenerating = false;
+            document.getElementById("sendBtn").disabled = false;
+          });
+      }
+
+      // ===== PROJECT MODE =====
+      function runProjectMode(text) {
+        showTyping();
+        var sysContent = PROJECT_SYS + getGithubContextPrompt();
+
+        // CALL 1: Chỉ xin plan JSON — prompt rất cụ thể, không thêm gì khác
+        var planPrompt =
+          "Respond with ONLY a JSON code block (no other text) for this project: " +
+          text +
+          '\n\nJSON format:\n```json\n{"project_name":"...","description":"...","tech_stack":["..."],"files":[{"path":"...","description":"..."}]}\n```';
+
+        var msgs = [
+          { role: "system", content: sysContent },
+          { role: "user", content: planPrompt },
+        ];
+
+        callAPI(msgs, getModel())
+          .then(function (reply) {
+            hideTyping();
+            var plan = parsePlan(reply);
+
+            if (!plan) {
+              // Retry: gửi thêm 1 lần với yêu cầu cứng hơn
+              addBotMsg("&#9203; Dang thu lai voi format khac...");
+              showTyping();
+              var retryMsgs = [
+                {
+                  role: "system",
+                  content:
+                    "You must respond with ONLY valid JSON, no markdown text outside the code block.",
+                },
+                {
+                  role: "user",
+                  content:
+                    "Return a JSON plan for: " +
+                    text +
+                    '\n\nMust match exactly:\n```json\n{"project_name":"App Name","description":"short desc","tech_stack":["Node.js","HTML"],"files":[{"path":"backend/index.js","description":"Express server"},{"path":"frontend/index.html","description":"Main page"}]}\n```',
+                },
+              ];
+              return callAPI(retryMsgs, getModel()).then(function (reply2) {
+                hideTyping();
+                var plan2 = parsePlan(reply2);
+                if (!plan2) {
+                  // Parse thất bại — thử tự tạo plan từ reply text
+                  addBotMsg(reply2);
+                  addBotMsg(
+                    '&#10060; Model khong sinh duoc JSON. Hay thu viet: **"Tao todo app"** hoac chon quick action ben duoi.'
+                  );
+                  state.isGenerating = false;
+                  document.getElementById("sendBtn").disabled = false;
+                  return;
+                }
+                startBuildFromPlan(plan2, text, sysContent);
+              });
+            }
+
+            startBuildFromPlan(plan, text, sysContent);
+          })
+          .catch(function (err) {
+            hideTyping();
+            addBotMsg("&#10060; Loi: " + err.message);
+            state.isGenerating = false;
+            document.getElementById("sendBtn").disabled = false;
+          });
+      }
+
+      function startBuildFromPlan(plan, origText, sysContent) {
+        state.project = plan;
+        state.files = {};
+        projectChatHistory = [];
+        plan.files.forEach(function (f) {
+          state.files[f.path] = {
+            content: null,
+            status: "pending",
+            description: f.description,
+          };
+        });
+        renderTree();
+        showProjInfo(plan);
+        document.getElementById("btnRegenerate").style.display = "inline-block";
+        addBotMsg(
+          "&#9989; Plan: **" +
+            plan.project_name +
+            "** — " +
+            plan.files.length +
+            " files. Dang sinh code..."
+        );
+        genAllFiles(plan, origText, sysContent);
+      }
+
+      // ===== PATCH MODE =====
+      function runPatchMode(text) {
+        showTyping();
+
+        var allPaths = Object.keys(state.files);
+
+        // ── PHASE 1: BUILD ARCHITECTURE MAP ──
+        // Group files by layer to give AI a mental model of the project structure
+        var layers = {
+          config: [],
+          model: [],
+          middleware: [],
+          route: [],
+          service: [],
+          util: [],
+          frontend: [],
+          other: [],
+        };
+        allPaths.forEach(function (p) {
+          var lp = p.toLowerCase();
+          if (
+            p.indexOf("frontend/") !== -1 ||
+            p.indexOf(".html") !== -1 ||
+            p.indexOf(".css") !== -1
+          )
+            layers.frontend.push(p);
+          else if (lp.indexOf("model") !== -1 || lp.indexOf("schema") !== -1)
+            layers.model.push(p);
+          else if (lp.indexOf("middleware") !== -1 || lp.indexOf("auth") !== -1)
+            layers.middleware.push(p);
+          else if (
+            lp.indexOf("route") !== -1 ||
+            lp.indexOf("router") !== -1 ||
+            lp.indexOf("controller") !== -1
+          )
+            layers.route.push(p);
+          else if (
+            lp.indexOf("service") !== -1 ||
+            lp.indexOf("util") !== -1 ||
+            lp.indexOf("helper") !== -1
+          )
+            layers.service.push(p);
+          else if (
+            p === "package.json" ||
+            p === "backend/package.json" ||
+            p.indexOf(".env") !== -1 ||
+            p.indexOf("config") !== -1
+          )
+            layers.config.push(p);
+          else layers.other.push(p);
+        });
+
+        var archMap = "=== ARCHITECTURE MAP ===\n";
+        if (layers.config.length)
+          archMap += "[Config/Package]  " + layers.config.join(" | ") + "\n";
+        if (layers.model.length)
+          archMap += "[Data Models]     " + layers.model.join(" | ") + "\n";
+        if (layers.middleware.length)
+          archMap +=
+            "[Middleware/Auth]  " + layers.middleware.join(" | ") + "\n";
+        if (layers.route.length)
+          archMap += "[Routes/API]      " + layers.route.join(" | ") + "\n";
+        if (layers.service.length)
+          archMap += "[Services/Utils]  " + layers.service.join(" | ") + "\n";
+        if (layers.frontend.length)
+          archMap += "[Frontend/UI]     " + layers.frontend.join(" | ") + "\n";
+        if (layers.other.length)
+          archMap += "[Other]           " + layers.other.join(" | ") + "\n";
+        archMap +=
+          "\nDEPENDENCY FLOW: Config → Models → Middleware → Routes → Server → Frontend";
+
+        // ── PHASE 2: SMART FILE PRIORITIZATION ──
+        // Score each file by relevance to current user request using dependency-aware logic
+        var textLower = text.toLowerCase();
+        var fileScores = {};
+        allPaths.forEach(function (p) {
+          var score = 0;
+          var fileName = p
+            .split("/")
+            .pop()
+            .toLowerCase()
+            .replace(/\.[^.]+$/, "");
+          var lp = p.toLowerCase();
+          if (textLower.indexOf(fileName) !== -1) score += 15;
+          if (textLower.indexOf(lp) !== -1) score += 20;
+          // Keyword heuristics
+          if (
+            textLower.match(/login|logout|auth|token|jwt|401|session/) &&
+            lp.match(/auth|user|admin|login|middleware|server|app|index/)
+          )
+            score += 8;
+          if (
+            textLower.match(/user|register|account/) &&
+            lp.match(/user|account|model|schema|register/)
+          )
+            score += 8;
+          if (
+            textLower.match(/photo|image|upload/) &&
+            lp.match(/photo|image|upload|media/)
+          )
+            score += 8;
+          if (
+            textLower.match(/route|api|endpoint/) &&
+            lp.match(/route|router|controller|server|index/)
+          )
+            score += 6;
+          if (
+            textLower.match(/schema|model|database|mongo/) &&
+            lp.match(/model|schema|db|seed/)
+          )
+            score += 8;
+          // Always-relevant files
+          if (
+            p === "backend/package.json" ||
+            p === "package.json" ||
+            p === "backend/index.js" ||
+            p === "backend/server.js" ||
+            p === "backend/app.js"
+          )
+            score += 5;
+          fileScores[p] = score;
+        });
+
+        // Dependency chain: if a model is relevant, pull in its routes; if a route is relevant, pull in its middleware
+        var relevantFiles = Object.keys(fileScores).filter(function (p) {
+          return fileScores[p] > 0;
+        });
+        relevantFiles.forEach(function (fp) {
+          var fileType = _classifyFile(fp);
+          var depTypes = DEPENDENCY_MAP[fileType] || [];
+          allPaths.forEach(function (otherFp) {
+            if (fileScores[otherFp] > 0) return; // already relevant
+            var otherType = _classifyFile(otherFp);
+            if (depTypes.indexOf(otherType) !== -1)
+              fileScores[otherFp] = (fileScores[otherFp] || 0) + 3;
+          });
+        });
+
+        // ── PHASE 3: BUILD CONTEXT BLOCKS ──
+        var MAX_TOTAL = 60000; // Tăng từ 50k → 60k
+        var MAX_FILE = 12000; // Tăng từ 10k → 12k mỗi file
+        var totalChars = 0;
+        var fileContentsBlock = "";
+
+        // Sort by score DESC, then include all files (prioritized, but don't exclude zero-score files)
+        var sortedPaths = allPaths.slice().sort(function (a, b) {
+          return (fileScores[b] || 0) - (fileScores[a] || 0);
+        });
+        sortedPaths.forEach(function (p) {
+          if (totalChars >= MAX_TOTAL) return;
+          var content = (state.files[p] && state.files[p].content) || "";
+          if (!content) return;
+          var preview =
+            content.length > MAX_FILE
+              ? content.substring(0, MAX_FILE) +
+                "\n// ...(file truncated — ask if you need more)"
+              : content;
+          var score = fileScores[p] || 0;
+          totalChars += preview.length;
+          fileContentsBlock +=
+            "\n--- " +
+            p +
+            (score > 0 ? " [RELEVANT score:" + score + "]" : "") +
+            " ---\n```\n" +
+            preview +
+            "\n```\n";
+        });
+
+        var projMeta =
+          (state.project
+            ? "Project: " +
+              state.project.project_name +
+              "\nTech: " +
+              (state.project.tech_stack || []).join(", ") +
+              "\n"
+            : "") +
+          archMap +
+          (fileContentsBlock
+            ? "\n\n=== FULL FILE CONTENTS (files marked [RELEVANT] are most related to the request) ===" +
+              fileContentsBlock
+            : "");
+
+        // Append relevant GitHub source files with dependency-aware selection
+        var relevantSrc = getRelevantGithubFiles(text);
+        if (relevantSrc) {
+          projMeta +=
+            "\n\n=== SOURCE FROM GITHUB (dependency-aware, read these to understand existing patterns) ===\n" +
+            relevantSrc;
+        }
+
+        // Append real import/require graph so AI understands module relationships
+        var importGraph = buildImportGraph();
+        if (importGraph) projMeta += "\n\n" + importGraph;
+
+        var sysContent = PATCH_SYS;
+
+        // Compact history — keep last 6 turns (up from 4)
+        var compactHist = projectChatHistory
+          .map(function (m) {
+            if (m.role === "assistant") {
+              var p = parsePatch(m.content);
+              return {
+                role: "assistant",
+                content: p
+                  ? '{"summary":"' +
+                    (p.summary || "Updated") +
+                    '","patches":[' +
+                    (p.patches || [])
+                      .map(function (x) {
+                        return '"' + x.path + '"';
+                      })
+                      .join(",") +
+                    "]}"
+                  : m.content.substring(0, 200),
+              };
+            }
+            return { role: m.role, content: m.content.substring(0, 500) };
+          })
+          .slice(-6);
+
+        projectChatHistory.push({ role: "user", content: text });
+
+        var msgs = [
+          { role: "system", content: sysContent },
+          { role: "user", content: projMeta },
+          {
+            role: "assistant",
+            content:
+              "I have read the full project structure, architecture map, and relevant file contents. I understand the dependency flow and will make only targeted, logically-consistent changes. Ready to respond with JSON patch.",
+          },
+        ];
+        compactHist.forEach(function (m) {
+          msgs.push(m);
+        });
+        msgs.push({ role: "user", content: text });
+
+        callAPI(msgs, getModel(), 32768)
+          .then(function (reply) {
+            hideTyping();
+            var patch = parsePatch(reply);
+
+            if (patch && patch.patches && patch.patches.length > 0) {
+              var changed = applyPatch(patch);
+
+              if (changed > 0) {
+                var lines = [
+                  "&#9989; **" + (patch.summary || "Đã cập nhật") + "**\n",
+                ];
+                if (patch._added && patch._added.length)
+                  lines.push(
+                    "➕ **Thêm mới (" +
+                      patch._added.length +
+                      ")**: " +
+                      patch._added
+                        .map(function (p) {
+                          return "`" + p + "`";
+                        })
+                        .join(", ")
+                  );
+                if (patch._modified && patch._modified.length)
+                  lines.push(
+                    "✏️ **Sửa đổi (" +
+                      patch._modified.length +
+                      ")**: " +
+                      patch._modified
+                        .map(function (p) {
+                          return "`" + p + "`";
+                        })
+                        .join(", ")
+                  );
+                if (patch._deleted && patch._deleted.length)
+                  lines.push(
+                    "🗑️ **Xóa (" +
+                      patch._deleted.length +
+                      ")**: " +
+                      patch._deleted
+                        .map(function (p) {
+                          return "`" + p + "`";
+                        })
+                        .join(", ")
+                  );
+                addBotMsg(lines.join("\n"));
+              } else {
+                addBotMsg(
+                  "&#9989; **" +
+                    (patch.summary || "Đã kiểm tra") +
+                    "**\n\nKhông có file nào thực sự bị thay đổi."
+                );
+              }
+
+              projectChatHistory.push({ role: "assistant", content: reply });
+              saveState();
+              state.isGenerating = false;
+              document.getElementById("sendBtn").disabled = false;
+            } else if (patch && patch.patches && patch.patches.length === 0) {
+              addBotMsg(patch.summary || reply);
+              projectChatHistory.push({ role: "assistant", content: reply });
+              saveState();
+              state.isGenerating = false;
+              document.getElementById("sendBtn").disabled = false;
+            } else {
+              // === FALLBACK: thử extract code blocks từ reply ===
+              var fallbackPatch = extractPatchFromBlocks(reply);
+              if (fallbackPatch && fallbackPatch.patches.length > 0) {
+                var changed3 = applyPatch(fallbackPatch);
+                var fileNames3 = fallbackPatch.patches
+                  .map(function (p) {
+                    return "`" + p.path + "`";
+                  })
+                  .join(", ");
+
+                if (changed3 > 0) {
+                  var lines3 = [
+                    "&#9989; **" +
+                      (fallbackPatch.summary || "Đã cập nhật") +
+                      "**\n",
+                  ];
+                  if (fallbackPatch._added && fallbackPatch._added.length)
+                    lines3.push(
+                      "➕ **Thêm mới**: " +
+                        fallbackPatch._added
+                          .map(function (p) {
+                            return "`" + p + "`";
+                          })
+                          .join(", ")
+                    );
+                  if (fallbackPatch._modified && fallbackPatch._modified.length)
+                    lines3.push(
+                      "✏️ **Sửa đổi**: " +
+                        fallbackPatch._modified
+                          .map(function (p) {
+                            return "`" + p + "`";
+                          })
+                          .join(", ")
+                    );
+                  if (fallbackPatch._deleted && fallbackPatch._deleted.length)
+                    lines3.push(
+                      "🗑️ **Xóa**: " +
+                        fallbackPatch._deleted
+                          .map(function (p) {
+                            return "`" + p + "`";
+                          })
+                          .join(", ")
+                    );
+                  addBotMsg(lines3.join("\n"));
+                } else {
+                  addBotMsg(
+                    "&#9989; **" +
+                      (fallbackPatch.summary || "Đã kiểm tra") +
+                      "**\n\nKhông có file nào thực sự bị thay đổi."
+                  );
+                }
+
+                projectChatHistory.push({ role: "assistant", content: reply });
+                saveState();
+                state.isGenerating = false;
+                document.getElementById("sendBtn").disabled = false;
+                return;
+              }
+
+              // === RETRY: gọi API lần 2 với prompt ngắn gọn hơn ===
+              addBotMsg("&#9203; Dang xu ly lai...");
+              showTyping();
+              var retryMsgs = [
+                {
+                  role: "system",
+                  content:
+                    'You MUST respond with ONLY a JSON code block. No explanations outside the JSON.\nFormat:\n```json\n{"summary":"brief Vietnamese desc","patches":[{"path":"file/path.js","content":"FULL file content"}]}\n```\nInclude COMPLETE file content in each patch. Never truncate.',
+                },
+                { role: "user", content: projMeta },
+                { role: "assistant", content: "Ready." },
+                { role: "user", content: text },
+              ];
+              callAPI(retryMsgs, getModel(), 32768)
+                .then(function (reply2) {
+                  hideTyping();
+                  var patch2 = parsePatch(reply2);
+                  if (!patch2) patch2 = extractPatchFromBlocks(reply2);
+                  if (patch2 && patch2.patches && patch2.patches.length > 0) {
+                    var changed2 = applyPatch(patch2);
+                    var fileNames2 = patch2.patches
+                      .map(function (p) {
+                        return "`" + p.path + "`";
+                      })
+                      .join(", ");
+
+                    if (changed2 > 0) {
+                      addBotMsg(
+                        "&#9989; **" +
+                          (patch2.summary || "Da cap nhat") +
+                          "**\n\nDa sua **" +
+                          changed2 +
+                          " file**: " +
+                          fileNames2
+                      );
+                    } else {
+                      addBotMsg(
+                        "&#9989; **" +
+                          (patch2.summary || "Da kiem tra") +
+                          "**\n\nKhong co file nao thuc su bi thay doi (code hoan toan giong hien tai)."
+                      );
+                    }
+
+                    projectChatHistory.push({
+                      role: "assistant",
+                      content: reply2,
+                    });
+                  } else if (
+                    patch2 &&
+                    patch2.patches &&
+                    patch2.patches.length === 0
+                  ) {
+                    addBotMsg(patch2.summary || reply2);
+                    projectChatHistory.push({
+                      role: "assistant",
+                      content: reply2,
+                    });
+                  } else {
+                    addBotMsg(reply);
+                    projectChatHistory.push({
+                      role: "assistant",
+                      content: reply.substring(0, 500),
+                    });
+                  }
+                  saveState();
+                })
+                .catch(function (err) {
+                  hideTyping();
+                  addBotMsg("&#10060; Loi: " + err.message);
+                })
+                .finally(function () {
+                  state.isGenerating = false;
+                  document.getElementById("sendBtn").disabled = false;
+                });
+            }
+          })
+          .catch(function (err) {
+            hideTyping();
+            addBotMsg("&#10060; Loi: " + err.message);
+            state.isGenerating = false;
+            document.getElementById("sendBtn").disabled = false;
+          });
+      }
+
+      // Dependency map: if a file of type X is being changed, also pull these related file types
+      var DEPENDENCY_MAP = {
+        model: [
+          "route",
+          "router",
+          "controller",
+          "middleware",
+          "server",
+          "index",
+          "app",
+          "seed",
+        ],
+        schema: [
+          "route",
+          "router",
+          "controller",
+          "middleware",
+          "server",
+          "index",
+          "app",
+          "seed",
+        ],
+        route: ["middleware", "server", "index", "app", "model", "schema"],
+        router: ["middleware", "server", "index", "app", "model", "schema"],
+        middleware: ["route", "router", "server", "index", "app"],
+        auth: [
+          "route",
+          "router",
+          "middleware",
+          "server",
+          "index",
+          "app",
+          "user",
+          "model",
+        ],
+        server: ["route", "router", "middleware", "app"],
+        app: ["route", "router", "middleware", "server", "index"],
+        controller: ["route", "router", "model", "schema"],
+        component: ["app", "router", "store", "index"],
+        store: ["component", "app", "index"],
+      };
+
+      // Build a real import/require graph from file contents.
+      // Returns a human-readable string showing which files import which.
+      function buildImportGraph() {
+        var paths = Object.keys(state.files);
+        if (!paths.length) return "";
+        var edges = [];
+
+        paths.forEach(function (p) {
+          var content = (state.files[p] && state.files[p].content) || "";
+          if (!content) return;
+
+          var reqPattern = /require\(['"]([^'"]+)['"]\)/g;
+          var impPattern = /import\s+(?:.*?\s+from\s+)?['"]([^'"]+)['"]/g;
+          var found = {};
+          var m;
+          while ((m = reqPattern.exec(content)) !== null) found[m[1]] = true;
+          while ((m = impPattern.exec(content)) !== null) found[m[1]] = true;
+
+          Object.keys(found).forEach(function (imp) {
+            if (imp[0] !== "." && imp[0] !== "/") return; // skip node_modules
+            var impLast = imp
+              .split("/")
+              .pop()
+              .replace(/\.[^.]+$/, "")
+              .toLowerCase();
+            paths.forEach(function (target) {
+              if (target === p) return;
+              var targetBase = target
+                .split("/")
+                .pop()
+                .replace(/\.[^.]+$/, "")
+                .toLowerCase();
+              if (impLast && targetBase && impLast === targetBase) {
+                edges.push(p + " \u2192 " + target);
+              }
+            });
+          });
+        });
+
+        if (!edges.length) return "";
+        return (
+          "=== IMPORT/REQUIRE DEPENDENCY GRAPH ===\n" +
+          edges.join("\n") +
+          "\n(Use this to understand which files depend on each other before making changes)"
+        );
+      }
+
+      // Get the logical "type" of a file to drive dependency resolution
+      function _classifyFile(filePath) {
+        var name = filePath
+          .split("/")
+          .pop()
+          .toLowerCase()
+          .replace(/\.[^.]+$/, "");
+        var fullLower = filePath.toLowerCase();
+        if (name.indexOf("model") !== -1 || name.indexOf("schema") !== -1)
+          return "model";
+        if (name.indexOf("route") !== -1 || name.indexOf("router") !== -1)
+          return "route";
+        if (name.indexOf("middleware") !== -1 || name.indexOf("auth") !== -1)
+          return "middleware";
+        if (name === "server" || name === "app" || name === "index")
+          return "server";
+        if (name.indexOf("controller") !== -1) return "controller";
+        if (
+          name.indexOf("component") !== -1 ||
+          fullLower.indexOf("component") !== -1
+        )
+          return "component";
+        if (name.indexOf("store") !== -1) return "store";
+        return name;
+      }
+
+      // Get relevant source file contents from GitHub/Workspace, with smart dependency-chain awareness
+      function getRelevantGithubFiles(userText) {
+        var text = userText.toLowerCase();
+        var result = [];
+        var MAX_CHARS = 30000; // Tăng từ 20k → 30k để truyền context đầy đủ hơn
+        var totalChars = 0;
+
+        ["be", "fe"].forEach(function (side) {
+          var ctx = githubCtx[side];
+          if (!ctx.connected || !ctx.summary) return;
+
+          var contentsSection = ctx.summary.split("=== FILE CONTENTS")[1];
+          if (!contentsSection) return;
+
+          var parts = contentsSection.split(/\n--- ([^\n]+) ---\n/);
+          var sideLabel = side === "be" ? "Backend" : "Frontend";
+          var fileMap = {};
+
+          // Build a map of all files with their contents
+          for (var i = 1; i < parts.length - 1; i += 2) {
+            var filePath = parts[i].trim();
+            var fileContent = parts[i + 1] ? parts[i + 1].trim() : "";
+            if (fileContent) fileMap[filePath] = fileContent;
+          }
+
+          var scored = {};
+
+          Object.keys(fileMap).forEach(function (filePath) {
+            var fileName = filePath.split("/").pop().toLowerCase();
+            var baseName = fileName.replace(/\.[^.]+$/, "");
+            var score = 0;
+
+            // Direct name match in user's text — highest priority
+            if (text.indexOf(baseName) !== -1) score += 15;
+            if (text.indexOf(filePath.toLowerCase()) !== -1) score += 20;
+
+            // Semantic keyword matching
+            var kwMap = {
+              "login|logout|auth|session|token|unauthorized|401|jwt|bearer": [
+                "auth",
+                "user",
+                "admin",
+                "login",
+                "session",
+                "middleware",
+                "server",
+                "index",
+                "app",
+              ],
+              "register|signup|account|password": [
+                "user",
+                "account",
+                "register",
+                "auth",
+                "model",
+                "schema",
+              ],
+              "photo|image|upload|gallery": [
+                "photo",
+                "image",
+                "upload",
+                "multer",
+                "media",
+              ],
+              "topbar|navbar|header|toolbar": [
+                "topbar",
+                "navbar",
+                "header",
+                "app",
+                "index",
+              ],
+              "route|router|navigation|link|redirect": [
+                "router",
+                "route",
+                "app",
+                "index",
+                "navigation",
+              ],
+              "schema|model|database|mongoose|mongo|db": [
+                "model",
+                "schema",
+                "db",
+                "mongoose",
+                "seed",
+              ],
+              "api|endpoint|fetch|axios|request|response|rest": [
+                "routes",
+                "api",
+                "controller",
+                "router",
+                "server",
+                "index",
+              ],
+              "middleware|protect|guard|verify": [
+                "middleware",
+                "auth",
+                "server",
+                "app",
+              ],
+              "package|dependency|install|npm": ["package.json"],
+            };
+            Object.keys(kwMap).forEach(function (kw) {
+              var kwHit = kw.split("|").some(function (k) {
+                return text.indexOf(k) !== -1;
+              });
+              var fileHit = kwMap[kw].some(function (t) {
+                return filePath.toLowerCase().indexOf(t) !== -1;
+              });
+              if (kwHit && fileHit) score += 6;
+            });
+
+            // Always include key entry-point files at baseline
+            if (
+              ["package.json", "index.js", "app.js", "server.js"].indexOf(
+                fileName
+              ) !== -1
+            )
+              score += 4;
+
+            if (score > 0) scored[filePath] = score;
+          });
+
+          // ── DEPENDENCY CHAIN EXPANSION ──
+          // For every file we already decided to include, pull in its logical dependencies too
+          var toExpand = Object.keys(scored).slice();
+          toExpand.forEach(function (fp) {
+            var fileType = _classifyFile(fp);
+            var depTypes = DEPENDENCY_MAP[fileType] || [];
+            Object.keys(fileMap).forEach(function (otherFp) {
+              if (scored[otherFp]) return; // already included
+              var otherType = _classifyFile(otherFp);
+              if (depTypes.indexOf(otherType) !== -1) {
+                // Dependency pull-in gets a medium priority score
+                scored[otherFp] = (scored[otherFp] || 0) + 3;
+              }
+            });
+          });
+
+          // Sort and emit
+          var sortedPaths = Object.keys(scored).sort(function (a, b) {
+            return scored[b] - scored[a];
+          });
+          sortedPaths.slice(0, 20).forEach(function (fp) {
+            // Tăng từ 12 → 20 files
+            if (totalChars >= MAX_CHARS) return;
+            var content = fileMap[fp];
+            if (!content) return;
+            var snippet =
+              content.length > 6000
+                ? content.substring(0, 6000) +
+                  "\n// ...(truncated, ask for full file if needed)"
+                : content;
+            var block =
+              "[" +
+              sideLabel +
+              "] " +
+              fp +
+              " (score:" +
+              scored[fp] +
+              "):\n```\n" +
+              snippet +
+              "\n```";
+            totalChars += block.length;
+            result.push(block);
+          });
+        });
+
+        return result.length ? result.join("\n\n") : "";
+      }
+
+      // GitHub context ngắn gọn cho patch mode — chỉ gửi file tree, không gửi content
+      function getGithubContextPromptShort() {
+        var parts = [];
+        ["fe", "be"].forEach(function (side) {
+          var ctx = githubCtx[side];
+          if (!ctx.connected || !ctx.summary) return;
+          // Chỉ lấy phần file tree, bỏ phần FILE CONTENTS để tiết kiệm token
+          var treeOnly = ctx.summary.split("=== FILE CONTENTS")[0];
+          // Giới hạn 3000 ký tự
+          if (treeOnly.length > 3000)
+            treeOnly = treeOnly.substring(0, 3000) + "\n...(truncated)";
+          parts.push(treeOnly);
+        });
+        return parts.length
+          ? "GITHUB REPO STRUCTURE:\n" + parts.join("\n\n")
+          : "";
+      }
+
+      // GitHub context đầy đủ cho project mode (lần đầu tạo)
+      function getGithubContextPrompt() {
+        var parts = [];
+        ["fe", "be"].forEach(function (side) {
+          var ctx = githubCtx[side];
+          if (!ctx.connected || !ctx.summary) return;
+          // Giới hạn 6000 ký tự mỗi repo
+          var s =
+            ctx.summary.length > 6000
+              ? ctx.summary.substring(0, 6000) + "\n...(truncated)"
+              : ctx.summary;
+          parts.push(s);
+        });
+        return parts.length
+          ? "\n\nNGU CANH DU AN TU GITHUB:\n" + parts.join("\n\n")
+          : "";
+      }
+
+      function parsePlan(text) {
+        // Log để debug khi cần
+        console.log("[parsePlan] raw reply:", text.substring(0, 300));
+
+        // Thử tìm ```json ... ```
+        var m = text.match(/```json\s*([\s\S]*?)```/);
+        if (m) {
+          try {
+            var p = JSON.parse(m[1].trim());
+            if (p.project_name && Array.isArray(p.files) && p.files.length)
+              return p;
+          } catch (e) {
+            console.warn("[parsePlan] JSON parse error:", e.message);
+          }
+        }
+
+        // Thử tìm ``` ... ``` (không có json tag)
+        var m2 = text.match(/```\s*(\{[\s\S]*?\})\s*```/);
+        if (m2) {
+          try {
+            var p2 = JSON.parse(m2[1].trim());
+            if (p2.project_name && Array.isArray(p2.files) && p2.files.length)
+              return p2;
+          } catch (e) {}
+        }
+
+        // Thử tìm raw JSON object trong text
+        var m3 = text.match(
+          /\{\s*"project_name"[\s\S]*?"files"\s*:\s*\[[\s\S]*?\]\s*\}/
+        );
+        if (m3) {
+          try {
+            var p3 = JSON.parse(m3[0]);
+            if (p3.project_name && Array.isArray(p3.files) && p3.files.length)
+              return p3;
+          } catch (e) {}
+        }
+
+        console.warn("[parsePlan] Could not find valid plan in reply");
+        return null;
+      }
+
+      // Helper function to validate and clean patches
+      function validateAndCleanPatches(json) {
+        if (json && json.patches && Array.isArray(json.patches)) {
+          // Validate hunks structure
+          var validPatches = [];
+          json.patches.forEach(function (patch) {
+            if (!patch.path) {
+              console.warn("[parsePatch] Invalid patch: missing path");
+              return;
+            }
+
+            if (patch.hunks && Array.isArray(patch.hunks)) {
+              var validHunks = [];
+              patch.hunks.forEach(function (hunk) {
+                if (
+                  typeof hunk.oldStr === "string" &&
+                  typeof hunk.newStr === "string"
+                ) {
+                  validHunks.push(hunk);
+                } else {
+                  console.warn("[parsePatch] Invalid hunk structure:", hunk);
+                }
+              });
+              if (validHunks.length > 0) {
+                patch.hunks = validHunks;
+                validPatches.push(patch);
+              }
+            } else if (typeof patch.content === "string") {
+              // New file with content
+              validPatches.push(patch);
+            }
+          });
+
+          if (validPatches.length > 0) {
+            json.patches = validPatches;
+            return json;
+          } else {
+            console.warn("[parsePatch] No valid patches found");
+          }
+        }
+        return null;
+      }
+      // Helper: string-aware brace matching — only track {} depth
+      function _braceParse(text, startIdx) {
+        var depth = 0,
+          inStr = false,
+          esc = false;
+        for (var i = startIdx; i < text.length; i++) {
+          var c = text[i];
+          if (esc) {
+            esc = false;
+            continue;
+          }
+          if (c === "\\" && inStr) {
+            esc = true;
+            continue;
+          }
+          if (c === '"') {
+            inStr = !inStr;
+            continue;
+          }
+          if (inStr) continue;
+          if (c === "{") depth++;
+          else if (c === "}") {
+            depth--;
+            if (depth === 0) {
+              try {
+                return JSON.parse(
+                  sanitizeJSONString(text.substring(startIdx, i + 1))
+                );
+              } catch (e) {
+                return null;
+              }
+            }
+          }
+        }
+        return null;
+      }
+
+      function sanitizeJSONString(str) {
+        var res = "";
+        var inStr = false;
+        var esc = false;
+        for (var i = 0; i < str.length; i++) {
+          var c = str[i];
+          if (esc) {
+            res += c;
+            esc = false;
+            continue;
+          }
+          if (c === "\\") {
+            res += c;
+            esc = true;
+            continue;
+          }
+          if (c === '"') {
+            inStr = !inStr;
+            res += c;
+            continue;
+          }
+          if (inStr && c === "\n") {
+            res += "\\n";
+            continue;
+          }
+          if (inStr && c === "\r") {
+            res += "\\r";
+            continue;
+          }
+          if (inStr && c === "\t") {
+            res += "\\t";
+            continue;
+          }
+          res += c;
+        }
+        return res;
+      }
+
+      function parsePatch(text) {
+        console.log("[parsePatch] Input text:", text.substring(0, 200) + "...");
+
+        // Clean up response - remove emoji và extra text
+        text = text.replace(/&#\d+;/g, ""); // Remove HTML entities
+
+        // Handle specific format: "...🤖{json}🤖..."
+        var emojiMatch = text.match(/🤖\s*(\{[\s\S]*?\})\s*🤖/);
+        if (emojiMatch) {
+          console.log("[parsePatch] Found emoji-wrapped JSON");
+          try {
+            var safeJsonStr = sanitizeJSONString(emojiMatch[1]);
+            var json = JSON.parse(safeJsonStr);
+            console.log("[parsePatch] Successfully parsed emoji-wrapped JSON");
+            if (json && json.patches && Array.isArray(json.patches)) {
+              return validateAndCleanPatches(json);
+            }
+          } catch (e) {
+            console.warn(
+              "[parsePatch] Emoji-wrapped JSON parse failed:",
+              e.message
+            );
+          }
+        }
+
+        // Remove emojis for further processing
+        text = text.replace(/🤖|⚡|✅|❌|🎯/g, ""); // Remove emojis
+        text = text.replace(/^\s*Dang\s+thu\s+lai.*?\.{3}\s*/i, ""); // Remove "Dang thu lai..." prefix
+
+        var json = null;
+
+        // 1. ```json ... ``` (priority - most reliable)
+        var jsonBlockRegex = /```json\s*([\s\S]*?)```/;
+        var match = text.match(jsonBlockRegex);
+        if (match) {
+          try {
+            var cleanJson = match[1].trim();
+            // Remove any trailing text after JSON
+            var braceDepth = 0;
+            var jsonEnd = -1;
+            for (var i = 0; i < cleanJson.length; i++) {
+              if (cleanJson[i] === "{") braceDepth++;
+              else if (cleanJson[i] === "}") {
+                braceDepth--;
+                if (braceDepth === 0) {
+                  jsonEnd = i + 1;
+                  break;
+                }
+              }
+            }
+            if (jsonEnd > 0) cleanJson = cleanJson.substring(0, jsonEnd);
+
+            var safeJsonStr = sanitizeJSONString(cleanJson);
+            json = JSON.parse(safeJsonStr);
+            console.log(
+              "[parsePatch] Successfully parsed JSON from code block"
+            );
+          } catch (e) {
+            console.warn("[parsePatch] JSON block parse failed:", e.message);
+          }
+        }
+
+        // 2. Direct JSON object (no code block)
+        if (!json) {
+          var firstBrace = text.indexOf("{");
+          var lastBrace = text.lastIndexOf("}");
+          if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            try {
+              json = _braceParse(text, firstBrace);
+              if (json && json.patches)
+                console.log("[parsePatch] Successfully parsed raw JSON");
+            } catch (e) {
+              console.warn("[parsePatch] Raw JSON parse failed:", e.message);
+            }
+          }
+        }
+
+        // 3. Validate and return
+        if (json) {
+          return validateAndCleanPatches(json);
+        }
+
+        console.warn(
+          "[parsePatch] Failed to parse patch from:",
+          text.substring(0, 200)
+        );
+        return null;
+      }
+
+      // ===== FALLBACK: Extract code blocks with file paths =====
+      function extractPatchFromBlocks(text) {
+        var patches = [];
+        var fileExts =
+          "js|ts|jsx|tsx|html|css|json|py|vue|md|yml|yaml|sh|env|go|java|php|rb|rs|sql|txt|xml|toml";
+
+        // Pattern 1: **file/path.ext** hoặc ### file/path.ext hoặc --- file/path.ext ---
+        // theo sau bởi ```lang\n...```
+        var p1 = new RegExp(
+          "(?:(?:\\*\\*|#{1,3}\\s*|---\\s*)([\\w./_-]+\\.(?:" +
+            fileExts +
+            "))(?:\\*\\*|\\s*---)?)[:\\s]*\\n\\s*```[\\w]*\\n([\\s\\S]*?)\\n\\s*```",
+          "gi"
+        );
+        var match;
+        while ((match = p1.exec(text)) !== null) {
+          var fpath = match[1].trim();
+          var fcontent = match[2];
+          if (fpath && fcontent && fcontent.trim().length > 10) {
+            patches.push({ path: fpath, content: fcontent });
+          }
+        }
+
+        // Pattern 2: "File: path/file.ext" hoặc "path/file.ext:" theo sau bởi code block
+        if (patches.length === 0) {
+          var p2 = new RegExp(
+            "(?:File:\\s*|^)([\\w./_-]+\\.(?:" +
+              fileExts +
+              "))[:\\s]*\\n\\s*```[\\w]*\\n([\\s\\S]*?)\\n\\s*```",
+            "gim"
+          );
+          while ((match = p2.exec(text)) !== null) {
+            var fpath2 = match[1].trim();
+            var fcontent2 = match[2];
+            if (fpath2 && fcontent2 && fcontent2.trim().length > 10) {
+              patches.push({ path: fpath2, content: fcontent2 });
+            }
+          }
+        }
+
+        // Pattern 3: Nếu chỉ có 1 code block duy nhất và context cho biết file nào
+        if (patches.length === 0) {
+          var singleBlock = text.match(/```\w*\n([\s\S]*?)\n\s*```/);
+          if (
+            singleBlock &&
+            state.selectedFile &&
+            singleBlock[1].trim().length > 20
+          ) {
+            patches.push({ path: state.selectedFile, content: singleBlock[1] });
+          }
+        }
+
+        if (patches.length === 0) return null;
+
+        // Trích summary từ text (dòng đầu tiên không phải code)
+        var summaryLine = text.split("\n").find(function (l) {
+          var trimmed = l.trim();
+          return (
+            trimmed.length > 5 &&
+            trimmed.length < 200 &&
+            trimmed.indexOf("```") === -1
+          );
+        });
+        return {
+          summary: summaryLine
+            ? summaryLine
+                .replace(/^[#*\-\s]+/, "")
+                .trim()
+                .substring(0, 150)
+            : "Code update",
+          patches: patches,
+        };
+      }
+
+      // Test function for hunks system
+      function testHunksSystem() {
+        console.log("=== Testing HUNKS System ===");
+
+        // Simulate the exact response format the user received
+        var testResponse =
+          'Dang thu lai voi format khac...🤖{   "summary": "Đã thêm tính năng upload ảnh bằng surgical hunks - POST /photos/new, nút Add Photo, hiển thị ảnh mới upload",   "patches": [     {       "path": "server.js",       "hunks": [         {           "oldStr": "app.use(express.json());",           "newStr": "app.use(express.json());\\napp.use(express.urlencoded({ extended: true }));"         }       ]     }   ] }🤖❌ Model khong sinh duoc JSON.';
+
+        console.log("Testing parsePatch with user response...");
+        var result = parsePatch(testResponse);
+
+        if (result) {
+          console.log("✅ SUCCESS: parsePatch worked!");
+          console.log("- Summary:", result.summary);
+          console.log("- Patches count:", result.patches.length);
+          console.log("- First patch path:", result.patches[0].path);
+          console.log("- First hunk:", result.patches[0].hunks[0]);
+
+          // Test applying the patch
+          if (result.patches.length > 0) {
+            // Create a fake existing file for testing
+            state.files["server.js"] = {
+              content:
+                'const express = require("express");\nconst app = express();\napp.use(express.json());\napp.listen(3000);',
+              status: "done",
+            };
+
+            console.log("Testing applyPatch...");
+            var changesCount = applyPatch(result);
+            console.log("✅ applyPatch completed, changes:", changesCount);
+
+            if (
+              state.files["server.js"] &&
+              state.files["server.js"].content.includes("express.urlencoded")
+            ) {
+              console.log(
+                "✅ SUCCESS: Hunk was successfully applied to the file!"
+              );
+              showToast("✅ HUNKS System working perfectly!");
+              addBotMsg(
+                "🧪 **Test Result: SUCCESS!**\n\n✅ Parsed emoji-wrapped JSON format\n✅ Applied hunk to existing file\n✅ Surgical edit preserved existing code\n\n**HUNKS system is ready to use!**"
+              );
+            } else {
+              console.log("❌ FAILED: Hunk was not applied correctly");
+              showToast("❌ Hunk application failed", "error");
+              addBotMsg(
+                "🧪 **Test Result: PARTIAL**\n\n✅ Parsed JSON correctly\n❌ Hunk application failed\n\n**Check console for details**"
+              );
+            }
+          }
+
+          return true;
+        } else {
+          console.log("❌ FAILED: parsePatch returned null");
+          showToast("❌ HUNKS test failed", "error");
+          addBotMsg(
+            "🧪 **Test Result: FAILED**\n\n❌ parsePatch returned null\n❌ Could not parse the response format\n\n**Check console for error details**"
+          );
+          return false;
+        }
+      }
+
+      function applyPatch(patch) {
+        var added = [],
+          modified = [],
+          deleted = [];
+        var actualPatches = [];
+
+        patch.patches.forEach(function (p) {
+          if (!p.path) return;
+
+          // action: 'delete' — xóa file khỏi workspace
+          if (p.action === "delete") {
+            if (state.files[p.path]) {
+              delete state.files[p.path];
+              deleted.push(p.path);
+              if (state.selectedFile === p.path) state.selectedFile = null;
+            }
+            actualPatches.push(p);
+            return;
+          }
+
+          // NEW: Handle hunks (diff fragments) for existing files
+          if (p.hunks && Array.isArray(p.hunks)) {
+            var existingFile = state.files[p.path];
+            if (!existingFile || !existingFile.content) {
+              console.warn(
+                "[applyPatch] Cannot apply hunks to non-existent file:",
+                p.path
+              );
+              return;
+            }
+
+            var updatedContent = existingFile.content;
+            var hunkApplied = false;
+
+            p.hunks.forEach(function (hunk) {
+              if (!hunk.oldStr || typeof hunk.newStr === "undefined") {
+                console.warn("[applyPatch] Invalid hunk:", hunk);
+                return;
+              }
+
+              // Safe literal string replace (indexOf first to check existence)
+              var idx = updatedContent.indexOf(hunk.oldStr);
+              if (idx !== -1) {
+                var newContent =
+                  updatedContent.substring(0, idx) +
+                  hunk.newStr +
+                  updatedContent.substring(idx + hunk.oldStr.length);
+                if (newContent.trim() === "") {
+                  console.warn(
+                    "[applyPatch] Cảnh báo: Hunk này sẽ làm trắng file, bỏ qua!",
+                    p.path
+                  );
+                } else {
+                  updatedContent = newContent;
+                  hunkApplied = true;
+                }
+              } else {
+                console.warn(
+                  "[applyPatch] Hunk oldStr not found in file:",
+                  p.path,
+                  hunk.oldStr.substring(0, 50)
+                );
+              }
+            });
+
+            if (hunkApplied && updatedContent !== existingFile.content) {
+              existingFile.content = updatedContent;
+              existingFile.status = "done";
+              modified.push(p.path);
+              actualPatches.push(p);
+              if (state.selectedFile === p.path) selectFile(p.path);
+            }
+            return;
+          }
+
+          // Original: Handle full file content
+          if (typeof p.content === "undefined") return;
+
+          // Bảo vệ: Nếu nội dung rỗng thì model có thể bị lỗi, bỏ qua không xóa file
+          if (typeof p.content === "string" && p.content.trim() === "") {
+            console.warn(
+              "[applyPatch] Bỏ qua vì patch.content rỗng (tránh xóa trắng file):",
+              p.path
+            );
+            return;
+          }
+
+          // Bỏ qua nếu nội dung không thay đổi
+          if (state.files[p.path] && state.files[p.path].content === p.content)
+            return;
+
+          var isNew = !state.files[p.path];
+          if (isNew) {
+            state.files[p.path] = {
+              content: p.content,
+              status: "done",
+              description: p.description || "Added by patch",
+            };
+            added.push(p.path);
+          } else {
+            state.files[p.path].content = p.content;
+            state.files[p.path].status = "done";
+            modified.push(p.path);
+          }
+          actualPatches.push(p);
+          if (state.selectedFile === p.path) selectFile(p.path);
+        });
+
+        patch.patches = actualPatches;
+        patch._added = added;
+        patch._modified = modified;
+        patch._deleted = deleted;
+
+        bumpSnapVer();
+        renderTree();
+        // Auto-select first modified/added file
+        var firstChanged = modified[0] || added[0];
+        if (firstChanged && state.files[firstChanged]) selectFile(firstChanged);
+        return added.length + modified.length + deleted.length;
+      }
+
+      function genAllFiles(plan, origPrompt, sysContent) {
+        sysContent = sysContent || PROJECT_SYS;
+        var files = plan.files,
+          idx = 0;
+        function next() {
+          if (idx >= files.length) {
+            state.isGenerating = false;
+            document.getElementById("sendBtn").disabled = false;
+            addBotMsg(
+              "Hoan thanh! Da sinh code cho **" +
+                files.length +
+                " files** cua **" +
+                plan.project_name +
+                "**.\n\nClick vao file de xem. Ban co the yeu cau sua doi tiep theo!"
+            );
+            if (files.length > 0) selectFile(files[0].path);
+            updateProjectChatTitle();
+            saveState();
+            return;
+          }
+          var f = files[idx];
+          setFileStatus(f.path, "generating");
+          var prompt =
+            'Viet noi dung day du cho file "' +
+            f.path +
+            '": ' +
+            f.description +
+            ". Du an: " +
+            plan.project_name +
+            ", tech: " +
+            (plan.tech_stack || []).join(",") +
+            ". Chi tra ve code trong code block.";
+          var msgs = [
+            { role: "system", content: sysContent },
+            { role: "user", content: "Tao du an: " + origPrompt },
+            {
+              role: "assistant",
+              content: "Ke hoach:\n```json\n" + JSON.stringify(plan) + "\n```",
+            },
+            { role: "user", content: prompt },
+          ];
+          callAPI(msgs, getModel())
+            .then(function (reply) {
+              state.files[f.path].content = extractCode(reply, f.path);
+              setFileStatus(f.path, "done");
+              idx++;
+              next();
+            })
+            .catch(function (err) {
+              state.files[f.path].content = "// Loi: " + err.message;
+              setFileStatus(f.path, "error");
+              idx++;
+              next();
+            });
+        }
+        next();
+      }
+
+      function extractCode(reply, path) {
+        var ext = path.split(".").pop().toLowerCase();
+        var langs = {
+          js: "javascript",
+          ts: "typescript",
+          html: "html",
+          css: "css",
+          py: "python",
+          json: "json",
+          md: "markdown",
+          sh: "bash",
+          yml: "yaml",
+          yaml: "yaml",
+          jsx: "jsx",
+          tsx: "tsx",
+          vue: "vue",
+        };
+        var lang = langs[ext] || ext;
+        var m = reply.match(
+          new RegExp("```" + lang + "\\s*([\\s\\S]*?)```", "i")
+        );
+        if (m) return m[1].trim();
+        var m2 = reply.match(/```\w*\s*([\s\S]*?)```/);
+        if (m2) return m2[1].trim();
+        return reply.trim();
+      }
+
+      // ===== FILE TREE =====
+      function fileIcon(path) {
+        var ext = path.split(".").pop().toLowerCase();
+        var map = {
+          html: "&#127760;",
+          css: "&#127912;",
+          js: "&#9889;",
+          ts: "&#128153;",
+          jsx: "&#9883;",
+          tsx: "&#9883;",
+          py: "&#128013;",
+          json: "&#128203;",
+          md: "&#128221;",
+          sh: "&#128736;",
+          yml: "&#9881;",
+          yaml: "&#9881;",
+          txt: "&#128196;",
+          env: "&#128272;",
+          vue: "&#128154;",
+          go: "&#128049;",
+          rs: "&#129408;",
+          java: "&#9749;",
+          php: "&#128024;",
+        };
+        return map[ext] || "&#128196;";
+      }
+
+      function buildTreeObj(paths) {
+        var root = {};
+        paths.forEach(function (p) {
+          var parts = p.split("/"),
+            node = root;
+          parts.forEach(function (part, i) {
+            if (i === parts.length - 1) node[part] = { __file: true, path: p };
+            else {
+              if (!node[part]) node[part] = {};
+              node = node[part];
+            }
+          });
+        });
+        return root;
+      }
+
+      function renderNode(node) {
+        var html = "",
+          keys = Object.keys(node).sort(function (a, b) {
+            var af = node[a].__file,
+              bf = node[b].__file;
+            if (af && !bf) return 1;
+            if (!af && bf) return -1;
+            return a.localeCompare(b);
+          });
+        keys.forEach(function (key) {
+          var val = node[key];
+          if (val.__file) {
+            var p = val.path,
+              fs = state.files[p] || {};
+            var si =
+              fs.status === "generating"
+                ? "&#9203;"
+                : fs.status === "done"
+                ? "&#9989;"
+                : fs.status === "error"
+                ? "&#10060;"
+                : "&#9898;";
+            var ac = state.selectedFile === p ? " active" : "";
+            html +=
+              '<div class="tree-item' +
+              ac +
+              '" onclick="selectFile(\'' +
+              p.replace(/\\/g, "\\\\").replace(/'/g, "\\'") +
+              '\')" title="' +
+              escHtml(fs.description || p) +
+              '"><span class="item-icon">' +
+              fileIcon(p) +
+              '</span><span class="item-name">' +
+              escHtml(key) +
+              '</span><span class="item-status">' +
+              si +
+              "</span></div>";
+          } else {
+            html +=
+              '<div class="tree-item folder"><span class="item-icon">&#128193;</span><span class="item-name">' +
+              escHtml(key) +
+              '</span></div><div class="tree-folder-children">' +
+              renderNode(val) +
+              "</div>";
+          }
+        });
+        return html;
+      }
+
+      function renderTree() {
+        var paths = Object.keys(state.files);
+        document.getElementById("fileTree").innerHTML = paths.length
+          ? renderNode(buildTreeObj(paths))
+          : '<div class="tree-empty">Chua co du an nao.</div>';
+      }
+
+      function setFileStatus(path, status) {
+        if (state.files[path]) state.files[path].status = status;
+        bumpSnapVer();
+        renderTree();
+        if (state.selectedFile === path) selectFile(path);
+      }
+
+      function showProjInfo(plan) {
+        var el = document.getElementById("projectInfo");
+        el.style.display = "block";
+        el.innerHTML =
+          "&#128230; <strong>" +
+          escHtml(plan.project_name) +
+          "</strong> &middot; " +
+          (plan.tech_stack || []).join(", ");
+      }
+
+      // ===== CODE VIEWER =====
+      function selectFile(path) {
+        state.selectedFile = path;
+        renderTree();
+        var fs = state.files[path];
+        document.getElementById("codeFilename").textContent = path;
+        var body = document.getElementById("codeBody");
+        var counter = document.getElementById("lineCounter");
+        if (!fs || fs.content === null) {
+          body.innerHTML =
+            fs && fs.status === "generating"
+              ? '<div class="code-placeholder"><span style="font-size:30px">&#9203;</span><span>Dang sinh code...</span></div>'
+              : '<div class="code-placeholder"><span style="font-size:30px">&#128196;</span><span>Chua co noi dung</span></div>';
+          document.getElementById("btnCopyFile").style.display = "none";
+          document.getElementById("btnDownloadFile").style.display = "none";
+          if (counter) counter.style.display = "none";
+        } else {
+          body.innerHTML = highlight(fs.content, path);
+          document.getElementById("btnCopyFile").style.display = "inline-block";
+          document.getElementById("btnDownloadFile").style.display =
+            "inline-block";
+          if (counter) {
+            var lines = (fs.content.match(/\n/g) || []).length + 1;
+            var chars = fs.content.length;
+            counter.textContent =
+              lines +
+              " dòng · " +
+              (chars > 1000 ? (chars / 1000).toFixed(1) + "k" : chars) +
+              " ký tự";
+            counter.style.display = "inline";
+          }
+        }
+      }
+
+      // ===== SYNTAX HIGHLIGHT =====
+      function highlight(code, path) {
+        var ext = (path || "").split(".").pop().toLowerCase();
+        var tokens = [];
+        var s = code || "";
+
+        function storeToken(match, cls) {
+          tokens.push(
+            '<span class="' + cls + '">' + escHtml(match) + "</span>"
+          );
+          return "\x01T" + (tokens.length - 1) + "T\x02";
+        }
+
+        if (ext === "html" || ext === "htm") {
+          s = s.replace(/(<!--[\s\S]*?-->)/g, function (m) {
+            return storeToken(m, "hl-comment");
+          });
+          s = s.replace(/(<\/?[a-zA-Z0-9\-:]+)/g, function (m) {
+            return storeToken(m, "hl-tag");
+          });
+          s = s.replace(/([a-zA-Z0-9\-]+)=("[^"]*")/g, function (m, p1, p2) {
+            return (
+              storeToken(p1, "hl-attr") + "=" + storeToken(p2, "hl-string")
+            );
+          });
+        } else if (ext === "css") {
+          s = s.replace(/(\/\*[\s\S]*?\*\/)/g, function (m) {
+            return storeToken(m, "hl-comment");
+          });
+          s = s.replace(/([a-zA-Z\-]+)\s*:/g, function (m, p1) {
+            return storeToken(p1, "hl-attr") + ":";
+          });
+        } else if (ext === "json") {
+          s = s.replace(/("[^"]*")\s*:/g, function (m, p1) {
+            return storeToken(p1, "hl-attr") + ":";
+          });
+          s = s.replace(/:\s*("[^"]*")/g, function (m, p1) {
+            return ": " + storeToken(p1, "hl-string");
+          });
+          s = s.replace(/:\s*(\d+\.?\d*)/g, function (m, p1) {
+            return ": " + storeToken(p1, "hl-number");
+          });
+          s = s.replace(/:\s*(true|false|null)/g, function (m, p1) {
+            return ": " + storeToken(p1, "hl-keyword");
+          });
+        } else if (["js", "ts", "jsx", "tsx"].indexOf(ext) !== -1) {
+          s = s.replace(/(\/\*[\s\S]*?\*\/)/g, function (m) {
+            return storeToken(m, "hl-comment");
+          });
+          s = s.replace(/(\/\/[^\n]*)/g, function (m) {
+            return storeToken(m, "hl-comment");
+          });
+          s = s.replace(
+            /("[^"\\]*(?:\\.[^"\\]*)*"|'[^'\\]*(?:\\.[^'\\]*)*'|`[^`\\]*(?:\\.[^`\\]*)*`)/g,
+            function (m) {
+              return storeToken(m, "hl-string");
+            }
+          );
+          s = s.replace(
+            /\b(const|let|var|function|return|if|else|for|while|do|class|import|export|default|new|this|typeof|instanceof|async|await|try|catch|finally|throw|switch|case|break|continue|true|false|null|undefined|void|of|in|from)\b/g,
+            function (m) {
+              return storeToken(m, "hl-keyword");
+            }
+          );
+          s = s.replace(/\b(\d+\.?\d*)\b/g, function (m) {
+            return storeToken(m, "hl-number");
+          });
+          s = s.replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g, function (m, p1) {
+            return storeToken(p1, "hl-function") + "(";
+          });
+        } else if (ext === "py") {
+          s = s.replace(/(#[^\n]*)/g, function (m) {
+            return storeToken(m, "hl-comment");
+          });
+          s = s.replace(
+            /("[^"\\]*(?:\\.[^"\\]*)*"|'[^'\\]*(?:\\.[^'\\]*)*')/g,
+            function (m) {
+              return storeToken(m, "hl-string");
+            }
+          );
+          s = s.replace(
+            /\b(def|class|import|from|return|if|elif|else|for|while|in|not|and|or|True|False|None|try|except|finally|with|as|pass|break|continue|lambda|yield|async|await|raise|global|nonlocal)\b/g,
+            function (m) {
+              return storeToken(m, "hl-keyword");
+            }
+          );
+          s = s.replace(/\b(\d+\.?\d*)\b/g, function (m) {
+            return storeToken(m, "hl-number");
+          });
+        }
+
+        // Escape the remaining code structure
+        s = escHtml(s);
+
+        // Restore the tokens
+        s = s.replace(/\x01T(\d+)T\x02/g, function (m, idx) {
+          return tokens[parseInt(idx, 10)];
+        });
+
+        return s;
+      }
+
+      // ===== COPY & DOWNLOAD =====
+      function copyCurrentFile() {
+        if (
+          !state.selectedFile ||
+          !state.files[state.selectedFile] ||
+          !state.files[state.selectedFile].content
+        )
+          return;
+        doCopy(
+          state.files[state.selectedFile].content,
+          "Da copy noi dung file!"
+        );
+      }
+
+      function downloadCurrentFile() {
+        if (
+          !state.selectedFile ||
+          !state.files[state.selectedFile] ||
+          !state.files[state.selectedFile].content
+        )
+          return;
+        var name = state.selectedFile.split("/").pop();
+        var blob = new Blob([state.files[state.selectedFile].content], {
+          type: "text/plain",
+        });
+        var url = URL.createObjectURL(blob),
+          a = document.createElement("a");
+        a.href = url;
+        a.download = name;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast("Dang tai: " + name);
+      }
+
+      function copyAllProject() {
+        var paths = Object.keys(state.files);
+        if (!paths.length) {
+          showToast("Chua co project!");
+          return;
+        }
+        var out = state.project
+          ? "# " +
+            state.project.project_name +
+            "\n" +
+            (state.project.description || "") +
+            "\n\n"
+          : "";
+        paths.forEach(function (p) {
+          out +=
+            "## " +
+            p +
+            "\n```\n" +
+            (state.files[p].content || "(chua co)") +
+            "\n```\n\n";
+        });
+        doCopy(out, "Da copy toan bo project!");
+      }
+
+      function doCopy(text, msg) {
+        if (navigator.clipboard && navigator.clipboard.writeText)
+          navigator.clipboard
+            .writeText(text)
+            .then(function () {
+              showToast(msg);
+            })
+            .catch(function () {
+              fallbackCopy(text, msg);
+            });
+        else fallbackCopy(text, msg);
+      }
+
+      function fallbackCopy(text, msg) {
+        var ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.cssText = "position:fixed;opacity:0";
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand("copy");
+          showToast(msg);
+        } catch (e) {
+          showToast("Khong the copy!");
+        }
+        document.body.removeChild(ta);
+      }
+
+      // ===== EXPORT ZIP =====
+      var isExporting = false;
+      async function exportZip() {
+        var paths = Object.keys(state.files);
+        if (!paths.length) {
+          showToast("Chưa có project!");
+          return;
+        }
+        if (isExporting) {
+          showToast("Export đang trong tiến trình...");
+          return;
+        }
+
+        isExporting = true;
+        // Dùng thư viện JSZip từ CDN (lazy load)
+        if (!window.JSZip) {
+          showToast("⏳ Đang tải JSZip...");
+          try {
+            await new Promise(function (resolve, reject) {
+              var s = document.createElement("script");
+              s.src =
+                "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";
+              s.onload = resolve;
+              s.onerror = reject;
+              document.head.appendChild(s);
+            });
+          } catch (e) {
+            showToast("❌ Không thể tải JSZip", "error");
+            isExporting = false;
+            return;
+          }
+        }
+
+        var zip = new window.JSZip();
+        var projName =
+          state.project && state.project.project_name
+            ? state.project.project_name.replace(/[^a-zA-Z0-9-_]/g, "_")
+            : "project";
+
+        paths.forEach(function (p) {
+          var content = (state.files[p] && state.files[p].content) || "";
+          if (content) zip.file(p, content);
+        });
+
+        // Thêm README nếu chưa có
+        if (!state.files["README.md"] && state.project) {
+          var readme =
+            "# " +
+            state.project.project_name +
+            "\n\n" +
+            (state.project.description || "") +
+            "\n\n" +
+            "## Tech Stack\n" +
+            (state.project.tech_stack || [])
+              .map(function (t) {
+                return "- " + t;
+              })
+              .join("\n") +
+            "\n\n" +
+            "## Files\n" +
+            paths
+              .map(function (p) {
+                return "- `" + p + "`";
+              })
+              .join("\n");
+          zip.file("README.md", readme);
+        }
+
+        try {
+          var blob = await zip.generateAsync({
+            type: "blob",
+            compression: "DEFLATE",
+            compressionOptions: { level: 6 },
+          });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement("a");
+          a.href = url;
+          a.download = projName + ".zip";
+          a.click();
+          URL.revokeObjectURL(url);
+          showToast(
+            "✅ Đã export " + paths.length + " files → " + projName + ".zip"
+          );
+        } catch (e) {
+          showToast("❌ Lỗi export: " + e.message, "error");
+        } finally {
+          isExporting = false;
+        }
+      }
+
+      // ===== API KEY MODAL =====
+      function openApiKeyModal() {
+        document.getElementById("apiKeyInput").value = API_KEY;
+        document.getElementById("apiKeyModal").classList.remove("hidden");
+        setTimeout(function () {
+          document.getElementById("apiKeyInput").focus();
+        }, 100);
+      }
+      function closeApiKeyModal() {
+        document.getElementById("apiKeyModal").classList.add("hidden");
+      }
+      function saveApiKey() {
+        var val = document.getElementById("apiKeyInput").value.trim();
+        if (!val) {
+          showToast("Vui long nhap API Key");
+          return;
+        }
+        API_KEY = val;
+        localStorage.setItem("mimo_api_key", val);
+        updateApiKeyBadge();
+        closeApiKeyModal();
+        showToast("Da luu API Key");
+      }
+      function updateApiKeyBadge() {
+        var dot = document.getElementById("apiKeyDot"),
+          label = document.getElementById("apiKeyLabel");
+        if (API_KEY) {
+          dot.className = "api-key-dot ok";
+          label.textContent = "Key: " + API_KEY.substring(0, 10) + "...";
+        } else {
+          dot.className = "api-key-dot";
+          label.textContent = "Chua co API Key";
+        }
+      }
+
+      // ===== TOAST =====
+      function showToast(msg, type) {
+        var t = document.getElementById("toast");
+        t.textContent = msg;
+        t.className = "toast" + (type === "error" ? " error" : "");
+        t.classList.add("show");
+        setTimeout(function () {
+          t.classList.remove("show");
+        }, 2800);
+      }
+
+      // ===== INIT =====
+      document.addEventListener("DOMContentLoaded", function () {
+        updateApiKeyBadge();
+        if (!API_KEY) setTimeout(openApiKeyModal, 400);
+        // Restore GitHub token
+        if (GITHUB_TOKEN) {
+          document.getElementById("githubToken").value = GITHUB_TOKEN;
+          var ts = document.getElementById("githubTokenStatus");
+          ts.style.display = "block";
+          ts.style.color = "#a78bfa";
+          ts.innerHTML =
+            "&#10003; Token (" +
+            GITHUB_TOKEN.substring(0, 8) +
+            "...) — 5000 req/h";
+        }
+        // Auto-connect hardcoded GitHub repos
+        if (HARDCODED_FE_REPO) {
+          document.getElementById("githubUrlFE").value = HARDCODED_FE_REPO;
+          connectGithub("fe");
+        }
+        if (HARDCODED_BE_REPO) {
+          document.getElementById("githubUrlBE").value = HARDCODED_BE_REPO;
+          connectGithub("be");
+        }
+        restoreState();
+        var inp = document.getElementById("chatInput");
+        inp.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+          }
+        });
+        inp.addEventListener("input", function () {
+          this.style.height = "auto";
+          this.style.height = Math.min(this.scrollHeight, 120) + "px";
+        });
+        document
+          .getElementById("githubUrlFE")
+          .addEventListener("keydown", function (e) {
+            if (e.key === "Enter") connectGithub("fe");
+          });
+        document
+          .getElementById("githubUrlBE")
+          .addEventListener("keydown", function (e) {
+            if (e.key === "Enter") connectGithub("be");
+          });
+        document
+          .getElementById("apiKeyModal")
+          .addEventListener("click", function (e) {
+            if (e.target === this) closeApiKeyModal();
+          });
+        document
+          .getElementById("apiKeyInput")
+          .addEventListener("keydown", function (e) {
+            if (e.key === "Enter") saveApiKey();
+            if (e.key === "Escape") closeApiKeyModal();
+          });
+        document
+          .getElementById("analyzeModal")
+          .addEventListener("click", function (e) {
+            if (e.target === this) closeAnalyzeModal();
+          });
+        document
+          .getElementById("analyzeInput")
+          .addEventListener("keydown", function (e) {
+            if (e.key === "Escape") closeAnalyzeModal();
+          });
+        window.addEventListener("beforeunload", saveState);
+      });
+    </script>
+  </body>
+</html>
