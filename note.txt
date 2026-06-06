@@ -1,3 +1,11 @@
 https://github.com/mindu2kk/LTW3
 
 tp-shoqr81vkap9z1690w8pdqs6azewva8z5afi3nkutehh4z9u
+
+git remote add origin https://github.com/midu2005-lab/be.git
+git branch -M main
+git push -u origin main
+
+git remote add origin https://github.com/midu2005-lab/fe.git
+git branch -M main
+git push -u origin main
